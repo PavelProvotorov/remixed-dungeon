@@ -149,4 +149,15 @@ public class TextureCache {
 		return all.containsKey(key);
 	}
 
+	public static Object source(SmartTexture texture) {
+		if(all.containsKey(texture)) {
+			for(Map.Entry<Object,SmartTexture> entry: all.entrySet()) {
+				if(entry.getValue()==texture) {
+					return entry.getKey();
+				}
+			}
+		}
+		return null;
+	}
+
 }

@@ -90,7 +90,12 @@ import com.watabou.pixeldungeon.actors.mobs.npcs.Ghost.FetidRat;
 import com.watabou.pixeldungeon.actors.mobs.npcs.Hedgehog;
 import com.watabou.pixeldungeon.actors.mobs.npcs.RatKing;
 import com.watabou.pixeldungeon.actors.mobs.npcs.Shopkeeper;
+import com.watabou.pixeldungeon.sprites.CharSprite;
+import com.watabou.pixeldungeon.sprites.MobSpriteDef;
+import com.watabou.pixeldungeon.utils.GLog;
 import com.watabou.utils.Random;
+
+import org.json.JSONException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -220,7 +225,19 @@ public class MobFactory {
 		registerMobClass(InquirerNPC.class);
 		registerMobClass(Shopkeeper.class);
 	}
-	
+
+	public static void MobsTest() throws InstantiationException, IllegalAccessException, JSONException {
+		for(Class<?extends Mob> cl:mMobsList.values()) {
+			Mob mob = cl.newInstance();
+
+			CharSprite mobSprite = mob.getSprite();
+
+			if (!(mobSprite instanceof MobSpriteDef)) {
+				GLog.i(mobSprite.toJson().toString());
+			}
+		}
+	}
+
 	public static Mob mobRandom() {
 		try {
 			return Random.element(mMobsList.values()).newInstance();
