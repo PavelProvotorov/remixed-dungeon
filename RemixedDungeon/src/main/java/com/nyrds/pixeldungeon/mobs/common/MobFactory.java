@@ -106,6 +106,11 @@ public class MobFactory {
 
 	static {
 		initMobsMap();
+		try {
+			testMobSprites();
+		} catch (Exception e) {
+			throw new TrackedRuntimeException(e);
+		}
 	}
 
 	private static void registerMobClass(Class<? extends Mob> mobClass) {
@@ -226,7 +231,7 @@ public class MobFactory {
 		registerMobClass(Shopkeeper.class);
 	}
 
-	public static void MobsTest() throws InstantiationException, IllegalAccessException, JSONException {
+	public static void testMobSprites() throws InstantiationException, IllegalAccessException, JSONException {
 		for(Class<?extends Mob> cl:mMobsList.values()) {
 			Mob mob = cl.newInstance();
 
