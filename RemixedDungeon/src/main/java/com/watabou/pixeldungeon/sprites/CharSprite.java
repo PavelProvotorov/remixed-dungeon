@@ -531,6 +531,7 @@ public class CharSprite extends CompositeMovieClip implements Tweener.Listener, 
             ret.put("zap", zap.toJson());
         }
         ret.put("die",die.toJson());
+        ret.put("bloodColor",String.format("0x%x",blood()));
         return ret;
     }
 }

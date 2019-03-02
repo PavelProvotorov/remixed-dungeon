@@ -1,5 +1,6 @@
 package com.nyrds.pixeldungeon.mobs.common;
 
+import com.nyrds.android.util.FileSystem;
 import com.nyrds.android.util.TrackedRuntimeException;
 import com.nyrds.pixeldungeon.mobs.elementals.AirElemental;
 import com.nyrds.pixeldungeon.mobs.elementals.EarthElemental;
@@ -92,11 +93,12 @@ import com.watabou.pixeldungeon.actors.mobs.npcs.RatKing;
 import com.watabou.pixeldungeon.actors.mobs.npcs.Shopkeeper;
 import com.watabou.pixeldungeon.sprites.CharSprite;
 import com.watabou.pixeldungeon.sprites.MobSpriteDef;
-import com.watabou.pixeldungeon.utils.GLog;
 import com.watabou.utils.Random;
 
 import org.json.JSONException;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -226,14 +228,16 @@ public class MobFactory {
 		registerMobClass(Shopkeeper.class);
 	}
 
-	public static void testMobSprites() throws InstantiationException, IllegalAccessException, JSONException {
+	public static void testMobSprites() throws InstantiationException, IllegalAccessException, JSONException, IOException {
 		for(Class<?extends Mob> cl:mMobsList.values()) {
 			Mob mob = cl.newInstance();
 
 			CharSprite mobSprite = mob.getSprite();
 
 			if (!(mobSprite instanceof MobSpriteDef)) {
-				GLog.i(mobSprite.toJson().toString());
+				OutputStream outputStream = FileSystem.getOutputStream(mob.getMobClassName()+".json");
+				outputStream.write(mobSprite.toJson().toString(2).getBytes());
+				outputStream.close();
 			}
 		}
 	}
