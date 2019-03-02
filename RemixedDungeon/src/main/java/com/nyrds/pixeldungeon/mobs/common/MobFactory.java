@@ -39,6 +39,7 @@ import com.nyrds.pixeldungeon.mobs.npc.PlagueDoctorNPC;
 import com.nyrds.pixeldungeon.mobs.npc.ServiceManNPC;
 import com.nyrds.pixeldungeon.mobs.npc.SociologistNPC;
 import com.nyrds.pixeldungeon.mobs.npc.TownGuardNPC;
+import com.nyrds.pixeldungeon.mobs.npc.TownShopkeeper;
 import com.nyrds.pixeldungeon.mobs.npc.TownsfolkMovieNPC;
 import com.nyrds.pixeldungeon.mobs.npc.TownsfolkNPC;
 import com.nyrds.pixeldungeon.mobs.npc.TownsfolkSilentNPC;
@@ -226,6 +227,7 @@ public class MobFactory {
 		registerMobClass(SociologistNPC.class);
 		registerMobClass(InquirerNPC.class);
 		registerMobClass(Shopkeeper.class);
+		registerMobClass(TownShopkeeper.class);
 	}
 
 	public static void testMobSprites() throws InstantiationException, IllegalAccessException, JSONException, IOException {
