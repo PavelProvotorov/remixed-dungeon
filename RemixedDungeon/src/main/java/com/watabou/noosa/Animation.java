@@ -49,7 +49,10 @@ public class Animation {
 	}
 
 	public Animation clone() {
-		return new Animation(Math.round(1 / delay), looped).frames(frames);
+		Animation ret = new Animation(Math.round(1 / delay), looped).frames(frames);
+		ret.intFrames = intFrames;
+		return ret;
+
 	}
 
 	public void frames(TextureFilm film, List<Integer> frames, int shift) {

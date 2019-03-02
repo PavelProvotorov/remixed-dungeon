@@ -106,11 +106,6 @@ public class MobFactory {
 
 	static {
 		initMobsMap();
-		try {
-			testMobSprites();
-		} catch (Exception e) {
-			throw new TrackedRuntimeException(e);
-		}
 	}
 
 	private static void registerMobClass(Class<? extends Mob> mobClass) {

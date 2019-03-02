@@ -524,8 +524,12 @@ public class CharSprite extends CompositeMovieClip implements Tweener.Listener, 
         ret.put("idle",idle.toJson());
         ret.put("run",run.toJson());
         ret.put("idle",idle.toJson());
-        ret.put("attack",attack.toJson());
-        ret.put("zap",zap.toJson());
+        if(attack!=null) {
+            ret.put("attack", attack.toJson());
+        }
+        if(zap!=null && zap != attack) {
+            ret.put("zap", zap.toJson());
+        }
         ret.put("die",die.toJson());
         return ret;
     }
