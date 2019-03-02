@@ -150,7 +150,7 @@ public class TextureCache {
 	}
 
 	public static Object source(SmartTexture texture) {
-		if(all.containsKey(texture)) {
+		if(all.containsValue(texture)) {
 			for(Map.Entry<Object,SmartTexture> entry: all.entrySet()) {
 				if(entry.getValue()==texture) {
 					return entry.getKey();
