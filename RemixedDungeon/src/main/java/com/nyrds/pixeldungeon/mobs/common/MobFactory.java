@@ -94,6 +94,7 @@ import com.watabou.pixeldungeon.actors.mobs.npcs.RatKing;
 import com.watabou.pixeldungeon.actors.mobs.npcs.Shopkeeper;
 import com.watabou.pixeldungeon.sprites.CharSprite;
 import com.watabou.pixeldungeon.sprites.MobSpriteDef;
+import com.watabou.pixeldungeon.utils.GLog;
 import com.watabou.utils.Random;
 
 import org.json.JSONException;
@@ -236,6 +237,7 @@ public class MobFactory {
 
 			CharSprite mobSprite = mob.getSprite();
 
+			GLog.i("%s %s",mob.getMobClassName(), mobSprite.getClass().getCanonicalName());
 			if (!(mobSprite instanceof MobSpriteDef)) {
 				OutputStream outputStream = FileSystem.getOutputStream(mob.getMobClassName()+".json");
 				outputStream.write(mobSprite.toJson().toString(2).getBytes());
