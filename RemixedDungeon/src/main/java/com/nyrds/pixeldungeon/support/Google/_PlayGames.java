@@ -79,10 +79,19 @@ public class _PlayGames implements GoogleApiClient.ConnectionCallbacks, GoogleAp
 		}
 	}
 
+	public static boolean usable() {
+		return true;
+	}
+
 	public void connect() {
-		Preferences.INSTANCE.put(Preferences.KEY_USE_PLAY_GAMES, true);
-		if (!isConnected()) {
-			googleApiClient.connect();
+
+		if(usable()) {
+			Preferences.INSTANCE.put(Preferences.KEY_USE_PLAY_GAMES, true);
+			if (!isConnected()) {
+				googleApiClient.connect();
+			}
+		} else {
+			disconnect();
 		}
 	}
 

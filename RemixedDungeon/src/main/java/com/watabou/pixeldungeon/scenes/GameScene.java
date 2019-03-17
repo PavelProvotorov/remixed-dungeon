@@ -24,7 +24,6 @@ import com.nyrds.pixeldungeon.levels.objects.LevelObject;
 import com.nyrds.pixeldungeon.levels.objects.sprites.LevelObjectSprite;
 import com.nyrds.pixeldungeon.ml.EventCollector;
 import com.nyrds.pixeldungeon.ml.R;
-import com.nyrds.pixeldungeon.mobs.common.MobFactory;
 import com.nyrds.pixeldungeon.utils.DungeonGenerator;
 import com.nyrds.pixeldungeon.windows.WndHeroSpells;
 import com.watabou.noosa.Camera;
@@ -391,12 +390,22 @@ public class GameScene extends PixelScene {
 
         Dungeon.observe();
 
-        try {
-            MobFactory.testMobSprites();
-        } catch (Exception e) {
-            throw new TrackedRuntimeException(e);
-        }
+        doSelfTest();
+    }
 
+    private void doSelfTest() {
+        if(BuildConfig.DEBUG) {
+            try {
+                MobFactory.testMobSprites();
+            } catch (Exception e) {
+                throw new TrackedRuntimeException(e);
+            }
+
+            for (int i = 0; i< Dungeon.level.map.length; ++i) {
+                Dungeon.level.tileDescByCell(i);
+                Dungeon.level.tileNameByCell(i);
+            }
+        }
     }
 
     public void destroy() {
