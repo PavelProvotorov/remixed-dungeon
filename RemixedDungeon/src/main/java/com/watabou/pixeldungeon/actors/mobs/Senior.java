@@ -17,6 +17,7 @@
  */
 package com.watabou.pixeldungeon.actors.mobs;
 
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.watabou.pixeldungeon.Badges;
 import com.watabou.pixeldungeon.actors.Char;
 import com.watabou.pixeldungeon.actors.buffs.Buff;
@@ -24,7 +25,7 @@ import com.watabou.pixeldungeon.actors.buffs.Paralysis;
 import com.watabou.pixeldungeon.sprites.SeniorSprite;
 import com.watabou.utils.Random;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class Senior extends Monk {
 
@@ -38,7 +39,7 @@ public class Senior extends Monk {
 	}
 	
 	@Override
-	public int attackProc(@NonNull Char enemy, int damage ) {
+	public int attackProc(@NotNull Char enemy, int damage ) {
 		if (Random.Int( 10 ) == 0) {
 			Buff.prolong( enemy, Paralysis.class, 1.1f );
 		}
@@ -46,7 +47,7 @@ public class Senior extends Monk {
 	}
 	
 	@Override
-	public void die( Object cause ) {
+	public void die(NamedEntityKind cause) {
 		super.die( cause );
 		Badges.validateRare( this );
 	}

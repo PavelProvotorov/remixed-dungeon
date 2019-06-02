@@ -1,5 +1,6 @@
 package com.nyrds.pixeldungeon.levels.objects;
 
+import com.nyrds.ForRestoreFromBundle;
 import com.nyrds.Packable;
 import com.nyrds.android.lua.LuaEngine;
 import com.nyrds.android.util.Util;
@@ -17,6 +18,7 @@ import com.watabou.pixeldungeon.levels.traps.ParalyticTrap;
 import com.watabou.pixeldungeon.levels.traps.PoisonTrap;
 import com.watabou.pixeldungeon.levels.traps.SummoningTrap;
 import com.watabou.pixeldungeon.levels.traps.ToxicTrap;
+import com.watabou.pixeldungeon.utils.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -65,8 +67,9 @@ public class Trap extends LevelObject {
 	@Packable(defaultValue = "-1")
 	private int usedImageIndex;
 
+	@ForRestoreFromBundle
 	public Trap() {
-		this(-1);
+		this(Level.INVALID_CELL);
 	}
 
 	public Trap(int pos) {
@@ -90,9 +93,8 @@ public class Trap extends LevelObject {
 
 	@Override
 	public void bump(Presser presser) {
-
 		if(presser instanceof Hero) {
-			interact((Hero)presser);
+			interact((Char)presser);
 			return;
 		}
 
@@ -155,7 +157,7 @@ public class Trap extends LevelObject {
 		activatedByMob = obj.optBoolean("activatedByMob", false);
 
 		script = obj.optString("script", "");
-		data = StringsManager.maybeId(obj.optString("data", ""));
+		data = StringsManager.maybeId(obj.optString("data", Utils.EMPTY_STRING));
 
 		usedImageIndex = obj.optInt("usedImageIndex", usedImageIndex);
 	}
@@ -202,7 +204,7 @@ public class Trap extends LevelObject {
 	}
 
 	@Override
-	public boolean nonPassable() {
+	public boolean nonPassable(Char ch) {
 		return !secret && uses > 0;
 	}
 

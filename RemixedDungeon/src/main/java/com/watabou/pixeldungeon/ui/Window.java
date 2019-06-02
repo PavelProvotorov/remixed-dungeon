@@ -28,6 +28,7 @@ import com.watabou.noosa.NinePatch;
 import com.watabou.noosa.TouchArea;
 import com.watabou.pixeldungeon.Chrome;
 import com.watabou.pixeldungeon.scenes.PixelScene;
+import com.watabou.pixeldungeon.utils.Utils;
 import com.watabou.utils.Signal;
 
 import java.util.regex.Matcher;
@@ -38,7 +39,8 @@ public class Window extends Group implements Signal.Listener<Key> {
 	public static final    int GAP           = 2;
 	protected static final int MARGIN        = 4;
 	protected static final int SMALL_GAP     = 1;
-	protected static final int BUTTON_HEIGHT = 20;
+	protected static final int BUTTON_HEIGHT = 18;
+	protected static final int STD_WIDTH     = 120;
 
 	protected int width;
 	protected int height;
@@ -172,7 +174,7 @@ public class Window extends Group implements Signal.Listener<Key> {
 		
 		public Highlighter( String text ) {
 			
-			String stripped = STRIPPER.matcher( text ).replaceAll( "" );
+			String stripped = STRIPPER.matcher( text ).replaceAll(Utils.EMPTY_STRING);
 			mask = new boolean[stripped.length()];
 			
 			Matcher m = HIGHLIGHTER.matcher( stripped );

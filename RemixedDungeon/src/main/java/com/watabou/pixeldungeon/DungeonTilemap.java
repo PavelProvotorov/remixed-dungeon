@@ -25,7 +25,7 @@ import com.watabou.pixeldungeon.levels.Level;
 import com.watabou.utils.Point;
 import com.watabou.utils.PointF;
 
-import androidx.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class DungeonTilemap extends Tilemap {
 
@@ -89,12 +89,12 @@ public abstract class DungeonTilemap extends Tilemap {
 	public abstract Image tile(int pos);
 
 	public static PointF tileToWorld(int pos) {
-		return new PointF(pos % level.getWidth(), pos / level.getWidth()).scale(SIZE);
+		return new PointF(level.cellX(pos), level.cellY(pos)).scale(SIZE);
 	}
 
 	public static PointF tileCenterToWorld(int pos) {
-		return new PointF((pos % level.getWidth() + 0.5f) * SIZE,
-				(pos / level.getWidth() + 0.5f) * SIZE);
+		return new PointF((level.cellX(pos) + 0.5f) * SIZE,
+				(level.cellY(pos) + 0.5f) * SIZE);
 	}
 
 	@Override

@@ -17,10 +17,13 @@
  */
 package com.watabou.pixeldungeon.actors;
 
+import android.annotation.SuppressLint;
+import android.util.Log;
+
+import com.nyrds.Packable;
 import com.watabou.pixeldungeon.Dungeon;
 import com.watabou.pixeldungeon.Statistics;
 import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
 import com.watabou.pixeldungeon.actors.mobs.Mob;
 import com.watabou.pixeldungeon.levels.Level;
 import com.watabou.utils.Bundlable;
@@ -35,6 +38,7 @@ public abstract class Actor implements Bundlable {
 	public static final float TICK	= 1f;
 	private static float realTimeMultiplier = 1f;
 
+	@Packable
 	private float time;
 
 	public static void setRealTimeMultiplier(float realTimeMultiplier) {
@@ -52,7 +56,7 @@ public abstract class Actor implements Bundlable {
 			this.time = now + time;
 		}
 	}
-	
+
 	protected float cooldown() {
 		return time - now;
 	}
@@ -60,27 +64,15 @@ public abstract class Actor implements Bundlable {
 	protected void deactivate() {
 		time = Float.MAX_VALUE;
 	}
-	
-	protected void onAdd() {}
-	
-	protected void onRemove() {}
-	
-	private static final String TIME = "time";
-	
+
 	@Override
 	public void storeInBundle( Bundle bundle ) {
-		if(Float.isInfinite(time) || Float.isNaN(time)) {
-			return;
-		}
-
-		bundle.put( TIME, time );
 	}
-	
+
 	@Override
 	public void restoreFromBundle( Bundle bundle ) {
-		time = bundle.getFloat( TIME );
 	}
-	
+
 	@Override
 	public boolean dontPack() {
 		return false;
@@ -94,6 +86,7 @@ public abstract class Actor implements Bundlable {
 	
 	private static float now = 0;
 	
+	@SuppressLint("UseSparseArrays")
 	public static Map<Integer, Char> chars = new HashMap<>();
 	
 	public static void clear() {
@@ -157,15 +150,16 @@ public abstract class Actor implements Bundlable {
 		now += elapsed * realTimeMultiplier;
 
 		do {
-			
 			current = null;
 
 			chars.clear();
+			float justNow = now;
 
 			//select actor to act
 			for (Actor actor : all) {
-				if (actor.time < now) {
+				if (actor.time < justNow) {
 					current = actor;
+					justNow = current.time;
 				}
 
 				//also fill chars positions
@@ -176,11 +170,16 @@ public abstract class Actor implements Bundlable {
 			}
 
 			if(current!= null) {
-				current.act();
-			}
+				Actor actor = current;
+//				Log.i("Main loop", String.format("%s %4.2f %4.2f",actor.getClass().getSimpleName(),now,actor.time));
 
-			if (!Dungeon.hero.isAlive()) {
-				break;
+				float timeBefore = actor.time;
+
+				actor.act();
+
+				if(!(actor.time>timeBefore)) {
+					Log.i("Main loop", String.format("%s %4.2f, time not increased!",actor.getClass().getSimpleName(),actor.time));
+				}
 			}
 
 		} while (current != null);
@@ -285,16 +284,12 @@ public abstract class Actor implements Bundlable {
 		}
 		
 		all.add( actor );
-		actor.time += time;	// (+=) => (=) ?
-		actor.onAdd();
-		
+		actor.time += time;
+
 		if (actor instanceof Char) {
 			Char ch = (Char)actor;
 			chars.put(ch.getPos(), ch);
-			for (Buff buff : ch.buffs()) {
-				all.add( buff );
-				buff.onAdd();
-			}
+			all.addAll(ch.buffs());
 		}
 
 	}
@@ -307,7 +302,6 @@ public abstract class Actor implements Bundlable {
 			}
 			
 			all.remove( actor );
-			actor.onRemove();
 		}
 	}
 	

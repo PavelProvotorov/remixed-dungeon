@@ -5,7 +5,6 @@ import com.nyrds.pixeldungeon.mechanics.spells.Spell;
 import com.nyrds.pixeldungeon.mechanics.spells.SpellFactory;
 import com.nyrds.pixeldungeon.mechanics.spells.SpellHelper;
 import com.nyrds.pixeldungeon.ml.R;
-import com.watabou.noosa.ColorBlock;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.Image;
 import com.watabou.noosa.Text;
@@ -14,8 +13,6 @@ import com.watabou.pixeldungeon.Dungeon;
 import com.watabou.pixeldungeon.actors.hero.Hero;
 import com.watabou.pixeldungeon.scenes.GameScene;
 import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.pixeldungeon.ui.ImageButton;
-import com.watabou.pixeldungeon.ui.QuickSlot;
 import com.watabou.pixeldungeon.ui.Window;
 import com.watabou.pixeldungeon.windows.IconTitle;
 
@@ -34,9 +31,9 @@ public class WndHeroSpells extends Window {
         this.listener = listener;
         this.hero = Dungeon.hero;
 
-        String affinity = hero.heroClass.getMagicAffinity();
+        String affinity = hero.getHeroClass().getMagicAffinity();
 
-        Text title = PixelScene.createText(Game.getVar(R.string.WndHero_SkillLevel) + ": " + hero.magicLvl(), GuiProperties.titleFontSize());
+        Text title = PixelScene.createText(Game.getVar(R.string.WndHero_SkillLevel) + ": " + hero.skillLevel(), GuiProperties.titleFontSize());
         title.hardlight(Window.TITLE_COLOR);
         title.setPos(width - title.width(), 0);
         add(title);
@@ -57,10 +54,10 @@ public class WndHeroSpells extends Window {
         ArrayList<String> spells = SpellFactory.getSpellsByAffinity(affinity);
         for (String spellName : spells) {
             Spell spell = SpellFactory.getSpellByName(spellName);
-            if (spell.level() > hero.magicLvl()) {
+            if (spell.level() > hero.skillLevel()) {
                 continue;
             }
-            spellsSet.add(new SpellButton(spell));
+            spellsSet.add(new SpellButton(this, hero, spell));
         }
 
         spellsSet.setPos(chrome.marginLeft(), Math.max(title.bottom(), masteryTitle.bottom()) + 2);
@@ -69,54 +66,17 @@ public class WndHeroSpells extends Window {
         resize(WndHelper.getLimitedWidth(120), (int) (spellsSet.bottom() + chrome.marginBottom()));
     }
 
+
+    public void onSpellClick(Spell spell){
+        if (listener != null) {
+            listener.onSelect(spell.itemForSlot());
+        } else {
+            GameScene.show(new WndSpellInfo(this, hero, spell));
+        }
+    }
+
     public interface Listener {
         void onSelect(Spell.SpellItem spell);
     }
 
-    private class SpellButton extends ImageButton {
-
-        private final Spell      spell;
-        protected     ColorBlock bg;
-
-        public SpellButton(Spell spell) {
-            super(spell.image());
-            this.spell = spell;
-        }
-
-        @Override
-        protected void createChildren() {
-            super.createChildren();
-            bg = new ColorBlock(width + 6, height + 6, 0xFF4A4D44);
-            add(bg);
-        }
-
-        @Override
-        protected void layout() {
-            super.layout();
-            bg.x = x - 3;
-            bg.y = y - 3;
-            bg.size(width + 6, height + 6);
-
-            image.x = x;
-            image.y = y;
-        }
-
-        @Override
-        protected void onClick() {
-            super.onClick();
-            if (listener != null) {
-                listener.onSelect(spell.itemForSlot());
-            } else {
-                GameScene.show(new WndSpellInfo(WndHeroSpells.this, hero, spell));
-            }
-        }
-
-        @Override
-        protected boolean onLongClick() {
-            hide();
-            QuickSlot.selectSlotFor(spell.itemForSlot());
-            return true;
-        }
-
-    }
 }

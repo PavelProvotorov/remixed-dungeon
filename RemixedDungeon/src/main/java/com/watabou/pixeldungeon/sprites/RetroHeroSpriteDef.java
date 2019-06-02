@@ -1,33 +1,22 @@
 package com.watabou.pixeldungeon.sprites;
 
 import com.watabou.gltextures.TextureCache;
-import com.watabou.noosa.Animation;
-import com.watabou.noosa.Camera;
-import com.watabou.noosa.TextureFilm;
-import com.watabou.noosa.tweeners.Tweener;
-import com.watabou.pixeldungeon.Dungeon;
 import com.watabou.pixeldungeon.actors.hero.Hero;
 import com.watabou.pixeldungeon.actors.hero.HeroClass;
 import com.watabou.pixeldungeon.actors.hero.HeroSubClass;
 import com.watabou.pixeldungeon.items.armor.Armor;
-import com.watabou.pixeldungeon.scenes.GameScene;
 import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Callback;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import androidx.annotation.NonNull;
 
 /**
  * Created by mike on 16.04.2016.
  */
 public class RetroHeroSpriteDef extends HeroSpriteDef {
 
-	private static final int RUN_FRAMERATE = 20;
 	private static final String HERO_EMPTY_PNG = "hero/empty.png";
 
 	// body goes as main texture
@@ -41,7 +30,6 @@ public class RetroHeroSpriteDef extends HeroSpriteDef {
 	private static final String LAYER_COLLAR      = "collar";
 	private static final String HERO_SPRITES_DESC_HERO_JSON = "hero/spritesDesc/Hero.json";
 
-	private Animation fly; 
 
 	private static final String[] layersOrder = {
 			LAYER_BODY,
@@ -55,9 +43,6 @@ public class RetroHeroSpriteDef extends HeroSpriteDef {
 	};
 
 	private Map<String,String> layersDesc = new HashMap<>();
-
-	private Tweener  jumpTweener;
-	private Callback jumpCallback;
 
 	public RetroHeroSpriteDef(String[] lookDesc){
 		super(HERO_SPRITES_DESC_HERO_JSON,0);
@@ -75,7 +60,7 @@ public class RetroHeroSpriteDef extends HeroSpriteDef {
 		layersDesc.clear();
 		boolean drawHair = true;
 
-		String classDescriptor = hero.heroClass.toString()+"_"+hero.subClass.toString();
+		String classDescriptor = hero.getHeroClass().toString()+"_"+ hero.getSubClass().toString();
 		String deathDescriptor = classDescriptor.equals("MAGE_WARLOCK") ? "warlock" : "common";
 		String facialHairDescriptor = HERO_EMPTY_PNG;
 		String hairDescriptor = HERO_EMPTY_PNG;
@@ -163,80 +148,22 @@ public class RetroHeroSpriteDef extends HeroSpriteDef {
 			descriptor = "woman";
 		}
 
-		if(hero.subClass.equals(HeroSubClass.WARLOCK)) {
+		if(hero.getSubClass().equals(HeroSubClass.WARLOCK)) {
 			descriptor = "warlock";
 		}
 
-		if(hero.subClass.equals(HeroSubClass.LICH)) {
+		if(hero.getSubClass().equals(HeroSubClass.LICH)) {
 			descriptor = "lich";
 		}
 
-		if(hero.heroClass == HeroClass.GNOLL) {
+		if(hero.getHeroClass() == HeroClass.GNOLL) {
 			descriptor = "gnoll";
 		}
 
 		return "hero/body/" +descriptor+".png";
 	}
 
-	@Override
-	protected void loadAdditionalData(JSONObject json, TextureFilm film, int kind) throws JSONException {
-		fly     = readAnimation(json, "fly", film);
-		operate = readAnimation(json, "operate", film);
-	}
-
-	@Override
-	public void place(int p) {
-		super.place(p);
-		if(ch instanceof Hero) {
-			Camera.main.target = this;
-		}
-	}
-
-	@Override
-	public void move(int from, int to) {
-		super.move(from, to);
-		if (ch.isFlying()) {
-			play(fly);
-		}
-		if(ch instanceof Hero) {
-			Camera.main.target = this;
-		}
-	}
-
-	public void jump(int from, int to, Callback callback) {
-		jumpCallback = callback;
-
-		int distance = Dungeon.level.distance(from, to);
-		jumpTweener = new JumpTweener(this, worldToCamera(to), distance * 4,
-				distance * 0.1f);
-		jumpTweener.listener = this;
-		getParent().add(jumpTweener);
-
-		turnTo(from, to);
-		play(fly);
-	}
-
-	@Override
-	public void onComplete(Tweener tweener) {
-		if (tweener == jumpTweener) {
-
-			if (getVisible() && Dungeon.level.water[ch.getPos()] && !ch.isFlying()) {
-				GameScene.ripple(ch.getPos());
-			}
-			if (jumpCallback != null) {
-				jumpCallback.call();
-			}
-		} else {
-			super.onComplete(tweener);
-		}
-	}
-
-	public boolean sprint(boolean on) {
-		run.delay = on ? 0.625f / RUN_FRAMERATE : 1f / RUN_FRAMERATE;
-		return on;
-	}
-
-	@NonNull
+	@NotNull
 	@Override
 	public String getDeathEffect() {
 		return HERO_EMPTY_PNG;

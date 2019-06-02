@@ -37,7 +37,7 @@ import com.watabou.pixeldungeon.scenes.GameScene;
 import com.watabou.utils.PointF;
 import com.watabou.utils.Random;
 
-import androidx.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class ItemSprite extends MovieClip {
 
@@ -167,7 +167,7 @@ public class ItemSprite extends MovieClip {
 			frame(film.get(image));
 		}catch (Exception e)
 		{
-			throw new TrackedRuntimeException("Something wrong with "+file+" frame: "+Integer.toString(image));
+			throw new TrackedRuntimeException("Something wrong with "+file+" frame: "+ image);
 		}
 		if ((this.glowing = glowing) == null) {
 			resetColor();

@@ -38,7 +38,7 @@ import com.watabou.pixeldungeon.utils.GLog;
 import com.watabou.pixeldungeon.utils.Utils;
 import com.watabou.utils.Random;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class Eye extends Mob {
 
@@ -57,11 +57,11 @@ public class Eye extends Mob {
 		loot = new Dewdrop();
 		lootChance = 0.5f;
 
-		RESISTANCES.add( WandOfDisintegration.class );
-		RESISTANCES.add( Death.class );
-		RESISTANCES.add( Leech.class );
+		addResistance( WandOfDisintegration.class );
+		addResistance( Death.class );
+		addResistance( Leech.class );
 
-		IMMUNITIES.add( Terror.class );
+		addImmunity( Terror.class );
 	}
 
 	@Override
@@ -123,7 +123,7 @@ public class Eye extends Mob {
 	}
 	
 	@Override
-	public boolean attack(@NonNull Char enemy ) {
+	public boolean attack(@NotNull Char enemy ) {
 		
 		for (int i=1; i < Ballistica.distance; i++) {
 			

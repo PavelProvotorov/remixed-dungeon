@@ -5,6 +5,7 @@ import com.nyrds.pixeldungeon.ai.Hunting;
 import com.nyrds.pixeldungeon.ai.MobAi;
 import com.nyrds.pixeldungeon.items.necropolis.BlackSkull;
 import com.nyrds.pixeldungeon.items.necropolis.BlackSkullOfMastery;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.pixeldungeon.Assets;
@@ -64,17 +65,17 @@ public class Lich extends Boss {
         exp = 25;
         defenseSkill = 23;
 
-        IMMUNITIES.add( Paralysis.class );
-        IMMUNITIES.add( ToxicGas.class );
-        IMMUNITIES.add( Terror.class );
-        IMMUNITIES.add( Death.class );
-        IMMUNITIES.add( Amok.class );
-        IMMUNITIES.add( Blindness.class );
-        IMMUNITIES.add( Sleep.class );
+        addImmunity( Paralysis.class );
+        addImmunity( ToxicGas.class );
+        addImmunity( Terror.class );
+        addImmunity( Death.class );
+        addImmunity( Amok.class );
+        addImmunity( Blindness.class );
+        addImmunity( Sleep.class );
 
         lootChance = 1.f;
 
-        if ( Dungeon.hero.heroClass == HeroClass.NECROMANCER){
+        if ( Dungeon.hero.getHeroClass() == HeroClass.NECROMANCER){
             loot = new BlackSkullOfMastery();
         }
         else {
@@ -258,7 +259,7 @@ public class Lich extends Boss {
     }
 
     @Override
-    public void die( Object cause ) {
+    public void die(NamedEntityKind cause) {
         super.die( cause );
         Dungeon.level.drop( new SkeletonKey(), getPos() ).sprite.drop();
 
@@ -290,7 +291,6 @@ public class Lich extends Boss {
 
         for (int i = 0;i < nSkulls && i < pedestals.size();++i) {
             RunicSkull skull = RunicSkull.makeNewSkull(i);
-            level.spawnMob(skull);
 
             CellEmitter.center(pedestals.get(i)).burst( ShadowParticle.CURSE, 8 );
             WandOfBlink.appear(skull, pedestals.get(i));

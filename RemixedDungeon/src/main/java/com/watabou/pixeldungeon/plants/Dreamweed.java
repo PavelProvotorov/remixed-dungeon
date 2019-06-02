@@ -17,11 +17,11 @@
  */
 package com.watabou.pixeldungeon.plants;
 
+import com.nyrds.pixeldungeon.levels.objects.Presser;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.CommonActions;
 import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
 import com.watabou.pixeldungeon.actors.blobs.Blob;
 import com.watabou.pixeldungeon.actors.blobs.ConfusionGas;
 import com.watabou.pixeldungeon.actors.buffs.Buff;
@@ -36,20 +36,14 @@ import com.watabou.pixeldungeon.utils.Utils;
 public class Dreamweed extends Plant {
 
 	public Dreamweed() {
-		image = 3;
-		plantName = Game.getVar(R.string.Dreamweed_Name);
+		imageIndex = 3;
 	}
 	
-	public void effect(int pos, Char ch) {
+	public void effect(int pos, Presser ch) {
 		GameScene.add( Blob.seed( pos, 300 + 20 * Dungeon.depth, ConfusionGas.class ) );
 	}
-	
-	@Override
-	public String desc() {
-		return Game.getVar(R.string.Dreamweed_Desc);
-	}
-	
-	public static class Seed extends Plant.Seed {
+
+	public static class Seed extends com.watabou.pixeldungeon.plants.Seed {
 		{
 			plantName = Game.getVar(R.string.Dreamweed_Name);
 			

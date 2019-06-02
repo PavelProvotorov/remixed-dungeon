@@ -2,12 +2,13 @@ package com.watabou.pixeldungeon.actors.mobs;
 
 import com.nyrds.pixeldungeon.ai.AiState;
 import com.nyrds.pixeldungeon.ai.Hunting;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.watabou.noosa.audio.Music;
 import com.watabou.pixeldungeon.items.scrolls.ScrollOfPsionicBlast;
 import com.watabou.pixeldungeon.items.weapon.enchantments.Death;
 import com.watabou.pixeldungeon.scenes.GameScene;
 
-import androidx.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 abstract public class Boss extends Mob {
 
@@ -17,8 +18,8 @@ abstract public class Boss extends Mob {
 	private String battleMusic;
 
 	public Boss() {
-		RESISTANCES.add(Death.class);
-		RESISTANCES.add(ScrollOfPsionicBlast.class);
+		addResistance(Death.class);
+		addResistance(ScrollOfPsionicBlast.class);
 		maxLvl = 50;
 	}
 
@@ -38,15 +39,15 @@ abstract public class Boss extends Mob {
 	}
 
 	@Override
-	public void die(Object cause) {
+	public void die(NamedEntityKind cause) {
 		GameScene.playLevelMusic();
 		GameScene.bossSlain();
 		super.die(cause);
 	}
 
 	@Override
-	protected void readCharData() {
-		super.readCharData();
+	protected void setupCharData() {
+		super.setupCharData();
 		battleMusic = getClassDef().optString(BATTLE_MUSIC, null);
 	}
 }

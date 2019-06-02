@@ -19,7 +19,6 @@ package com.watabou.pixeldungeon.sprites;
 
 import com.nyrds.android.util.ModdingMode;
 import com.nyrds.pixeldungeon.ml.EventCollector;
-import com.watabou.gltextures.TextureCache;
 import com.watabou.noosa.Animation;
 import com.watabou.noosa.CompositeMovieClip;
 import com.watabou.noosa.CompositeTextureImage;
@@ -49,12 +48,9 @@ import com.watabou.utils.Callback;
 import com.watabou.utils.PointF;
 import com.watabou.utils.Random;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
-
-import androidx.annotation.Nullable;
 
 public class CharSprite extends CompositeMovieClip implements Tweener.Listener, MovieClip.Listener {
 
@@ -69,8 +65,11 @@ public class CharSprite extends CompositeMovieClip implements Tweener.Listener, 
     private static final float MOVE_INTERVAL = 0.1f;
     private static final float FLASH_INTERVAL = 0.05f;
 
+    @Nullable
+    protected Image avatar;
+
     public enum State {
-        BURNING, LEVITATING, INVISIBLE, PARALYSED, FROZEN, ILLUMINATED
+        NONE,BURNING, LEVITATING, INVISIBLE, PARALYSED, FROZEN, ILLUMINATED
     }
 
     protected Animation idle;
@@ -165,7 +164,13 @@ public class CharSprite extends CompositeMovieClip implements Tweener.Listener, 
     }
 
     public void move(int from, int to) {
-        play(run);
+        move(from, to, true);
+    }
+
+    public void move(int from, int to, boolean playRunAnimation) {
+        if(playRunAnimation) {
+            play(run);
+        }
 
         if (getParent() != null) {
             motion = new PosTweener(this, worldToCamera(to), MOVE_INTERVAL);
@@ -499,9 +504,12 @@ public class CharSprite extends CompositeMovieClip implements Tweener.Listener, 
     }
 
     public Image avatar() {
-        CompositeTextureImage avatar = new CompositeTextureImage(texture);
-        avatar.frame(idle.frames[0]);
-        avatar.addLayer(texture);
+        if(avatar == null) {
+            CompositeTextureImage newAvatar = new CompositeTextureImage(texture);
+            newAvatar.frame(idle.frames[0]);
+            newAvatar.addLayer(texture);
+            avatar = newAvatar;
+        }
         return avatar;
     }
 
@@ -512,26 +520,5 @@ public class CharSprite extends CompositeMovieClip implements Tweener.Listener, 
 
     public void reset() {
         curAnim = null;
-    }
-
-    public JSONObject toJson() throws JSONException {
-        JSONObject ret = new JSONObject();
-
-        ret.put("texture", TextureCache.source(texture));
-        ret.put("width", width);
-        ret.put("height",height);
-
-        ret.put("idle",idle.toJson());
-        ret.put("run",run.toJson());
-        ret.put("idle",idle.toJson());
-        if(attack!=null) {
-            ret.put("attack", attack.toJson());
-        }
-        if(zap!=null && zap != attack) {
-            ret.put("zap", zap.toJson());
-        }
-        ret.put("die",die.toJson());
-        ret.put("bloodColor",String.format("0x%x",blood()));
-        return ret;
     }
 }

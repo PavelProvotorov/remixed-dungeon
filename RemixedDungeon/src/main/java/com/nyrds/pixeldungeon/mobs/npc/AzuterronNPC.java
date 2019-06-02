@@ -1,6 +1,7 @@
 package com.nyrds.pixeldungeon.mobs.npc;
 
 import com.nyrds.pixeldungeon.items.guts.HeartOfDarkness;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.R;
 import com.nyrds.pixeldungeon.mobs.guts.TreacherousSpirit;
 import com.watabou.noosa.Game;
@@ -19,13 +20,14 @@ import com.watabou.pixeldungeon.utils.GLog;
 import com.watabou.pixeldungeon.windows.WndQuest;
 import com.watabou.utils.Bundle;
 
-import java.util.HashSet;
-import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 
 public class AzuterronNPC extends Shopkeeper {
 
 	public AzuterronNPC() {
 		movable = false;
+		addImmunity( Paralysis.class );
+		addImmunity( Roots.class );
 	}
 	
 	@Override
@@ -44,7 +46,7 @@ public class AzuterronNPC extends Shopkeeper {
 	}
 
 	@Override
-	public void damage( int dmg, Object src ) {
+	public void damage(int dmg, @NotNull NamedEntityKind src ) {
 	}
 	
 	@Override
@@ -67,14 +69,14 @@ public class AzuterronNPC extends Shopkeeper {
 	}
 
 	@Override
-	public boolean interact(final Hero hero) {
+	public boolean interact(final Char hero) {
 		getSprite().turnTo( getPos(), hero.getPos() );
 		if(Quest.completed) {
 			return super.interact(hero);
 		}
 		if (Quest.given) {
 			
-			Item item = hero.belongings.getItem( HeartOfDarkness.class );
+			Item item = hero.getBelongings().getItem( HeartOfDarkness.class );
 			if (item != null) {
 
 				item.removeItemFrom(Dungeon.hero);
@@ -100,18 +102,7 @@ public class AzuterronNPC extends Shopkeeper {
 		}
 		return true;
 	}
-		
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<>();
-	static {
-		IMMUNITIES.add( Paralysis.class );
-		IMMUNITIES.add( Roots.class );
-	}
-	
-	@Override
-	public Set<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
-	
+
 	public static class Quest {
 
 		private static boolean completed;

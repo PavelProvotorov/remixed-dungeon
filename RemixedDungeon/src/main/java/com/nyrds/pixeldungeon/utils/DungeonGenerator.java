@@ -1,6 +1,7 @@
 package com.nyrds.pixeldungeon.utils;
 
 import com.nyrds.android.util.JsonHelper;
+import com.nyrds.android.util.ModError;
 import com.nyrds.android.util.ModdingMode;
 import com.nyrds.android.util.TrackedRuntimeException;
 import com.nyrds.pixeldungeon.levels.FakeLastLevel;
@@ -31,17 +32,15 @@ import com.watabou.pixeldungeon.levels.PrisonBossLevel;
 import com.watabou.pixeldungeon.levels.PrisonLevel;
 import com.watabou.pixeldungeon.levels.SewerBossLevel;
 import com.watabou.pixeldungeon.levels.SewerLevel;
-import com.watabou.pixeldungeon.utils.GLog;
 import com.watabou.pixeldungeon.utils.Utils;
 import com.watabou.pixeldungeon.windows.WndStory;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
-
-import androidx.annotation.NonNull;
 
 public class DungeonGenerator {
 	private static final String DEAD_END_LEVEL = "DeadEndLevel";
@@ -57,7 +56,7 @@ public class DungeonGenerator {
 	static private JSONObject mLevels;
 	static private JSONObject mGraph;
 
-	@NonNull
+	@NotNull
 	private static String mCurrentLevelId   = Utils.UNKNOWN;
 	private static String mCurrentLevelKind = Utils.UNKNOWN;
 
@@ -75,7 +74,7 @@ public class DungeonGenerator {
 	}
 
 	private static void initLevelsMap() {
-		if (BuildConfig.DEBUG) {
+		if (BuildConfig.DEBUG && !ModdingMode.inMod()) {
 			mDungeonMap = JsonHelper.readJsonFromAsset("levelsDesc/Dungeon_debug.json");
 		} else {
 			mDungeonMap = JsonHelper.readJsonFromAsset("levelsDesc/Dungeon.json");
@@ -167,7 +166,7 @@ public class DungeonGenerator {
 
 			if (index >= nextLevelSet.length()) {
 				index = 0;
-				EventCollector.logException("wrong next level index");
+				EventCollector.logException("wrong next level index on: "+current.levelId);
 			}
 
 			mCurrentLevelId = nextLevelSet.optString(index,"0");
@@ -189,8 +188,6 @@ public class DungeonGenerator {
 					}
 				}
 			}
-
-
 
 			mCurrentLevelDepth = nextLevelDesc.optInt("depth",0);
 			mCurrentLevelKind  = getLevelKind(next.levelId);
@@ -261,15 +258,16 @@ public class DungeonGenerator {
 	}
 
 	public static Level createLevel(Position pos) {
-		Class<? extends Level> levelClass = mLevelKindList.get(getLevelKind(pos.levelId));
-
-		if (levelClass == null) {
-			GLog.w("Unknown level type: %s", getLevelKind(pos.levelId));
-
-			return createLevel(pos);
-		}
+		String newLevelKind = getLevelKind(pos.levelId);
+		Class<? extends Level> levelClass = mLevelKindList.get(newLevelKind);
 
 		try {
+			if (levelClass == null) {
+				EventCollector.collectSessionData("unknown level kind", newLevelKind);
+				ModError.doReport(newLevelKind, new Exception("unknown level kind"));
+				levelClass = DeadEndLevel.class;
+			}
+
 			Level ret;
 			String levelId = pos.levelId;
 			if (levelClass == PredesignedLevel.class) {
@@ -302,7 +300,6 @@ public class DungeonGenerator {
 			throw new TrackedRuntimeException(e);
 		} catch (JSONException e) {
 			throw ModdingMode.modException(e);
-
 		}
 	}
 
@@ -345,7 +342,7 @@ public class DungeonGenerator {
 		return "1";
 	}
 
-	@NonNull
+	@NotNull
 	public static String getLevelKind(String id) {
 		return getLevelProperty(id,"kind",DEAD_END_LEVEL);
 	}
@@ -354,12 +351,12 @@ public class DungeonGenerator {
 		return getLevelProperty(id,"depth",0);
 	}
 
-	@NonNull
+	@NotNull
 	public static String getCurrentLevelKind() {
 		return mCurrentLevelKind;
 	}
 
-	@NonNull
+	@NotNull
 	public static String getCurrentLevelId() {
 		return mCurrentLevelId;
 	}

@@ -48,7 +48,6 @@ public class Multiplicity extends Glyph {
 			if (Dungeon.level.cellValid(imgCell)) {
 				if(defender instanceof Hero) {
 					MirrorImage img = new MirrorImage((Hero) defender);
-					Dungeon.level.spawnMob(img);
 					WandOfBlink.appear( img, imgCell );
 				}
 
@@ -56,7 +55,7 @@ public class Multiplicity extends Glyph {
 					((Mob) defender).split(imgCell, damage);
 				}
 
-				defender.damage( Random.IntRange( 1, defender.ht() / 6 ), /*attacker*/ this );
+				defender.damage( Random.IntRange( 1, defender.ht() / 6 ), this );
 				checkOwner( defender );
 			}
 			

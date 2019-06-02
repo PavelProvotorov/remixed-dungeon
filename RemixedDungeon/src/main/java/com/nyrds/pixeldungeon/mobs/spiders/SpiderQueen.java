@@ -3,6 +3,7 @@ package com.nyrds.pixeldungeon.mobs.spiders;
 import com.nyrds.pixeldungeon.ai.Hunting;
 import com.nyrds.pixeldungeon.items.chaos.ChaosCrystal;
 import com.nyrds.pixeldungeon.items.common.armor.SpiderArmor;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.watabou.pixeldungeon.Badges;
 import com.watabou.pixeldungeon.Dungeon;
 import com.watabou.pixeldungeon.actors.Char;
@@ -13,7 +14,7 @@ import com.watabou.pixeldungeon.items.SpiderCharm;
 import com.watabou.pixeldungeon.items.keys.SkeletonKey;
 import com.watabou.utils.Random;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class SpiderQueen extends Boss {
 	
@@ -44,7 +45,7 @@ public class SpiderQueen extends Boss {
 	}
 	
 	@Override
-	public int attackProc(@NonNull Char enemy, int damage ) {
+	public int attackProc(@NotNull Char enemy, int damage ) {
 		if (Random.Int( 2 ) == 0) {
 			Buff.affect( enemy, Poison.class ).set( Random.Int( 7, 9 ) * Poison.durationFactor( enemy ) );
 		}
@@ -85,7 +86,7 @@ public class SpiderQueen extends Boss {
 	}
 
 	@Override
-	public void die(Object cause) {
+	public void die(NamedEntityKind cause) {
 		super.die(cause);
 		Dungeon.level.drop( new SkeletonKey(), getPos() ).sprite.drop();
 		Badges.validateBossSlain(Badges.Badge.SPIDER_QUEEN_SLAIN);

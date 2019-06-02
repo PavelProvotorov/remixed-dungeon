@@ -13,7 +13,7 @@ import com.watabou.pixeldungeon.actors.buffs.Terror;
 import com.watabou.pixeldungeon.items.weapon.enchantments.Death;
 import com.watabou.utils.Random;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class RunicSkull extends MultiKindMob {
 
@@ -35,13 +35,13 @@ public class RunicSkull extends MultiKindMob {
 		kind = Random.Int(4);
 		setState(MobAi.getStateByClass(Wandering.class));
 
-		IMMUNITIES.add( Paralysis.class );
-		IMMUNITIES.add( ToxicGas.class );
-		IMMUNITIES.add( Terror.class );
-		IMMUNITIES.add( Death.class );
-		IMMUNITIES.add( Amok.class );
-		IMMUNITIES.add( Blindness.class );
-		IMMUNITIES.add( Sleep.class );
+		addImmunity( Paralysis.class );
+		addImmunity( ToxicGas.class );
+		addImmunity( Terror.class );
+		addImmunity( Death.class );
+		addImmunity( Amok.class );
+		addImmunity( Blindness.class );
+		addImmunity( Sleep.class );
 	}
 
 	static public RunicSkull makeNewSkull(int k) {
@@ -89,7 +89,7 @@ public class RunicSkull extends MultiKindMob {
 	}
 
 	@Override
-	public boolean zap(@NonNull Char enemy){
+	public boolean zap(@NotNull Char enemy){
 		return false;
 	}
 

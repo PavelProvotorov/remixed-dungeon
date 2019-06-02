@@ -10,12 +10,10 @@ class AppodealInterstitialProvider implements AdsUtilsCommon.IInterstitialProvid
 
     private InterstitialPoint returnTo;
 
-    static {
-        AppodealAdapter.init();
-    }
-
     @Override
     public void showInterstitial(InterstitialPoint ret) {
+        AppodealAdapter.init();
+
         returnTo = ret;
 
         Appodeal.setInterstitialCallbacks(new AppodealInterstitialCallbacks());
@@ -28,6 +26,11 @@ class AppodealInterstitialProvider implements AdsUtilsCommon.IInterstitialProvid
         if(!Appodeal.show(RemixedDungeon.instance(), Appodeal.INTERSTITIAL)) {
             AdsUtilsCommon.interstitialFailed(AppodealInterstitialProvider.this, returnTo);
         }
+    }
+
+    @Override
+    public boolean isReady() {
+        return Appodeal.isLoaded(Appodeal.INTERSTITIAL);
     }
 
     private class AppodealInterstitialCallbacks implements InterstitialCallbacks {

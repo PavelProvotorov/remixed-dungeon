@@ -21,6 +21,7 @@ import com.nyrds.pixeldungeon.ai.Hunting;
 import com.nyrds.pixeldungeon.ai.MobAi;
 import com.nyrds.pixeldungeon.ai.Passive;
 import com.nyrds.pixeldungeon.ai.Wandering;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.R;
 import com.nyrds.pixeldungeon.mobs.common.IZapper;
 import com.nyrds.pixeldungeon.mobs.common.MobFactory;
@@ -46,13 +47,12 @@ import com.watabou.pixeldungeon.items.weapon.enchantments.Death;
 import com.watabou.pixeldungeon.levels.Level;
 import com.watabou.pixeldungeon.mechanics.Ballistica;
 import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.sprites.CharSprite;
 import com.watabou.pixeldungeon.sprites.LarvaSprite;
 import com.watabou.pixeldungeon.sprites.RottingFistSprite;
 import com.watabou.pixeldungeon.sprites.YogSprite;
 import com.watabou.utils.Random;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class Yog extends Boss {
 
@@ -65,14 +65,14 @@ public class Yog extends Boss {
 
 		setState(MobAi.getStateByClass(Passive.class));
 
-		IMMUNITIES.add(Death.class);
-		IMMUNITIES.add(Terror.class);
-		IMMUNITIES.add(Amok.class);
-		IMMUNITIES.add(Charm.class);
-		IMMUNITIES.add(Sleep.class);
-		IMMUNITIES.add(Burning.class);
-		IMMUNITIES.add(ToxicGas.class);
-		IMMUNITIES.add(ScrollOfPsionicBlast.class);
+		addImmunity(Death.class);
+		addImmunity(Terror.class);
+		addImmunity(Amok.class);
+		addImmunity(Charm.class);
+		addImmunity(Sleep.class);
+		addImmunity(Burning.class);
+		addImmunity(ToxicGas.class);
+		addImmunity(ScrollOfPsionicBlast.class);
 	}
 
 	public void spawnFists() {
@@ -105,7 +105,7 @@ public class Yog extends Boss {
 	}
 
 	@Override
-	public void damage(int dmg, Object src) {
+	public void damage(int dmg, @NotNull NamedEntityKind src) {
 
 		int damageShift = 0;
 		for (Mob mob : Dungeon.level.mobs) {
@@ -140,7 +140,7 @@ public class Yog extends Boss {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void die(Object cause) {
+	public void die(NamedEntityKind cause) {
 
 		Mob mob = Dungeon.level.getRandomMob();
 		while(mob != null){
@@ -180,20 +180,15 @@ public class Yog extends Boss {
 
 			setState(MobAi.getStateByClass(Wandering.class));
 
-			RESISTANCES.add(ToxicGas.class);
+			addResistance(ToxicGas.class);
 
-			IMMUNITIES.add(Amok.class);
-			IMMUNITIES.add(Sleep.class);
-			IMMUNITIES.add(Terror.class);
-			IMMUNITIES.add(Poison.class);
+			addImmunity(Amok.class);
+			addImmunity(Sleep.class);
+			addImmunity(Terror.class);
+			addImmunity(Poison.class);
 		}
 
 		public RottingFist() {
-		}
-
-		@Override
-		public void die(Object cause) {
-			super.die(cause);
 		}
 
 		@Override
@@ -212,7 +207,7 @@ public class Yog extends Boss {
 		}
 
 		@Override
-		public int attackProc(@NonNull Char enemy, int damage) {
+		public int attackProc(@NotNull Char enemy, int damage) {
 			if (Random.Int(3) == 0) {
 				Buff.affect(enemy, Ooze.class);
 				enemy.getSprite().burst(0xFF000000, 5);
@@ -226,7 +221,7 @@ public class Yog extends Boss {
 
 			if (Dungeon.level.water[getPos()] && hp() < ht()) {
 				getSprite().emitter().burst(ShadowParticle.UP, 2);
-				hp(hp() + REGENERATION);
+				heal(REGENERATION, this, true);
 			}
 
 			return super.act();
@@ -249,20 +244,15 @@ public class Yog extends Boss {
 
 			setState(MobAi.getStateByClass(Wandering.class));
 
-			RESISTANCES.add(ToxicGas.class);
+			addResistance(ToxicGas.class);
 
-			IMMUNITIES.add(Amok.class);
-			IMMUNITIES.add(Sleep.class);
-			IMMUNITIES.add(Terror.class);
-			IMMUNITIES.add(Burning.class);
+			addImmunity(Amok.class);
+			addImmunity(Sleep.class);
+			addImmunity(Terror.class);
+			addImmunity(Burning.class);
 		}
 
 		public BurningFist() {
-		}
-
-		@Override
-		public void die(Object cause) {
-			super.die(cause);
 		}
 
 		@Override
@@ -286,28 +276,14 @@ public class Yog extends Boss {
 		}
 
 		@Override
-		public boolean attack(@NonNull Char enemy) {
-
-			if (!Dungeon.level.adjacent(getPos(), enemy.getPos())) {
-				spend(attackDelay());
-
-				if (hit(this, enemy, true)) {
-
-					int dmg = damageRoll();
-					enemy.damage(dmg, this);
-
-					enemy.getSprite().bloodBurstA(getSprite().center(), dmg);
+		public boolean attack(@NotNull Char enemy) {
+			if(super.attack(enemy)) {
+				if (!Dungeon.level.adjacent(getPos(), enemy.getPos())) {
 					enemy.getSprite().flash();
-
-					return true;
-				} else {
-
-					enemy.getSprite().showStatus(CharSprite.NEUTRAL, enemy.defenseVerb());
-					return false;
 				}
-			} else {
-				return super.attack(enemy);
+				return true;
 			}
+			return false;
 		}
 
 		@Override

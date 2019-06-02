@@ -13,7 +13,7 @@ import com.watabou.pixeldungeon.actors.mobs.Mob;
 import com.watabou.pixeldungeon.items.food.FrozenCarpaccio;
 import com.watabou.utils.Random;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class IceElemental extends Mob implements IDepthAdjustable {
 
@@ -30,9 +30,9 @@ public class IceElemental extends Mob implements IDepthAdjustable {
 		exp = depth + 1;
 		maxLvl = depth + 2;
 		
-		IMMUNITIES.add(Roots.class);
-		IMMUNITIES.add(Paralysis.class);
-		IMMUNITIES.add(ToxicGas.class);
+		addImmunity(Roots.class);
+		addImmunity(Paralysis.class);
+		addImmunity(ToxicGas.class);
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class IceElemental extends Mob implements IDepthAdjustable {
 	}
 
 	@Override
-	public int attackProc(@NonNull Char enemy, int damage) {
+	public int attackProc(@NotNull Char enemy, int damage) {
 		//Buff proc
 		if (Random.Int(3) == 1){
 			if(enemy instanceof Hero) {

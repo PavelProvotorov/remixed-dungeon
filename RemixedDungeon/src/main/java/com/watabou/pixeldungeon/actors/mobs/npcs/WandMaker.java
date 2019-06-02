@@ -17,6 +17,7 @@
  */
 package com.watabou.pixeldungeon.actors.mobs.npcs;
 
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.EventCollector;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
@@ -62,6 +63,8 @@ import com.watabou.pixeldungeon.windows.WndWandmaker;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
 public class WandMaker extends NPC {
@@ -82,7 +85,7 @@ public class WandMaker extends NPC {
 	}
 		
 	@Override
-	public void damage( int dmg, Object src ) {
+	public void damage(int dmg, @NotNull NamedEntityKind src ) {
 	}
 	
 	@Override
@@ -95,14 +98,15 @@ public class WandMaker extends NPC {
 	}
 	
 	@Override
-	public boolean interact(final Hero hero) {
-		
+	public boolean interact(final Char hero) {
+
+
 		getSprite().turnTo( getPos(), hero.getPos() );
 		if (Quest.given) {
 			
 			Item item = Quest.alternative ?
-				hero.belongings.getItem( CorpseDust.class ) :
-				hero.belongings.getItem( Rotberry.Seed.class );
+				hero.getBelongings().getItem( CorpseDust.class ) :
+				hero.getBelongings().getItem( Rotberry.Seed.class );
 			if (item != null) {
 				GameScene.show( new WndWandmaker( this, item ) );
 			} else {
@@ -286,29 +290,33 @@ public class WandMaker extends NPC {
 	public static class Rotberry extends Plant {
 		
 		{
-			image = 7;
-			plantName = Game.getVar(R.string.WandMaker_RotberryName);
+			imageIndex = 7;
 		}
-		
+
 		@Override
-		public void activate( Char ch ) {
-			super.activate( ch );
-			
-			GameScene.add( Blob.seed( pos, 100, ToxicGas.class ) );
-			
-			Dungeon.level.drop( new Seed(), pos ).sprite.drop();
-			
-			if (ch != null) {
-				Buff.prolong( ch, Roots.class, TICK * 3 );
-			}
+		public String name() {
+			return Game.getVar(R.string.WandMaker_RotberryName);
 		}
-		
+
+        @Override
+        public boolean interact(Char ch) {
+
+            GameScene.add( Blob.seed( pos, 100, ToxicGas.class ) );
+
+            Dungeon.level.drop( new Seed(), pos ).sprite.drop();
+
+            if (ch != null) {
+                Buff.prolong( ch, Roots.class, TICK * 3 );
+            }
+            return super.interact(ch);
+        }
+
 		@Override
 		public String desc() {
 			return Game.getVar(R.string.WandMaker_RotberryDesc);
 		}
 		
-		public static class Seed extends Plant.Seed {
+		public static class Seed extends com.watabou.pixeldungeon.plants.Seed {
 			{
 				plantName = Game.getVar(R.string.WandMaker_RotberryName);
 				

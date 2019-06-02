@@ -21,6 +21,7 @@ package com.watabou.pixeldungeon.actors.mobs;
 import com.nyrds.pixeldungeon.ai.Hunting;
 import com.nyrds.pixeldungeon.ai.MobAi;
 import com.nyrds.pixeldungeon.ai.Wandering;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.mobs.common.IDepthAdjustable;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.pixeldungeon.Assets;
@@ -37,21 +38,21 @@ import com.watabou.pixeldungeon.levels.Level;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.annotation.NonNull;
 
 public class Mimic extends Mob implements IDepthAdjustable {
 
 	private int level;
 
 	public Mimic() {
-		IMMUNITIES.add(ScrollOfPsionicBlast.class);
+		addImmunity(ScrollOfPsionicBlast.class);
 		adjustStats(Dungeon.depth);
 	}
 
-	@NonNull
+	@NotNull
 	public ArrayList<Item> items = new ArrayList<>();
 
 	private static final String ITEMS = "items";
@@ -80,7 +81,7 @@ public class Mimic extends Mob implements IDepthAdjustable {
 	}
 
 	@Override
-	public int attackProc(@NonNull Char enemy, int damage) {
+	public int attackProc(@NotNull Char enemy, int damage) {
 		if (enemy == Dungeon.hero && Random.Int(3) == 0) {
 			int gp = Random.Int(1, hp());
 			if (gp > 0) {
@@ -102,7 +103,7 @@ public class Mimic extends Mob implements IDepthAdjustable {
 	}
 
 	@Override
-	public void die(Object cause) {
+	public void die(NamedEntityKind cause) {
 
 		super.die(cause);
 

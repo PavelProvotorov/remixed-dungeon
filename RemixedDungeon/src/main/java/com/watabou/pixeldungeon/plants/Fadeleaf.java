@@ -17,6 +17,7 @@
  */
 package com.watabou.pixeldungeon.plants;
 
+import com.nyrds.pixeldungeon.levels.objects.Presser;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.CommonActions;
@@ -36,24 +37,24 @@ import com.watabou.pixeldungeon.utils.Utils;
 public class Fadeleaf extends Plant {
 
 	public Fadeleaf () {
-		image = 6;
-		plantName = Game.getVar(R.string.Fadeleaf_Name);
+		imageIndex = 6;
 	}
 	
-	public void effect(int pos, Char ch) {
+	public void effect(int pos, Presser ch) {
+
 		if (ch instanceof Hero) {
 			Hero hero = (Hero)ch;
 			ScrollOfTeleportation.teleportHero( hero );
 			hero.spendAndNext(1);
 			hero.curAction = null;
 			
-		} else if (ch instanceof Mob && ch.isMovable()) {
-			
-			int newPos = Dungeon.level.randomRespawnCell();
-			if (Dungeon.level.cellValid(newPos)) {
-				ch.setPos(newPos);
-				ch.getSprite().place(ch.getPos());
-				ch.getSprite().setVisible(Dungeon.visible[pos]);
+		} else if (ch instanceof Mob && ((Mob)ch).isMovable()) {
+			Mob mob = (Mob)ch;
+			int newPos = mob.respawnCell(mob.level());
+			if (mob.level().cellValid(newPos)) {
+				mob.setPos(newPos);
+				mob.getSprite().place(mob.getPos());
+				mob.getSprite().setVisible(Dungeon.visible[pos]);
 			}
 		}
 		
@@ -61,13 +62,19 @@ public class Fadeleaf extends Plant {
 			CellEmitter.get( pos ).start( Speck.factory( Speck.LIGHT ), 0.2f, 3 );
 		}		
 	}
-	
+
+	@Override
+	public boolean interact(Char ch) {
+		super.interact(ch);
+		return false; // don't revert our teleportation
+	}
+
 	@Override
 	public String desc() {
 		return Game.getVar(R.string.Fadeleaf_Desc);
 	}
 	
-	public static class Seed extends Plant.Seed {
+	public static class Seed extends com.watabou.pixeldungeon.plants.Seed {
 		{
 			plantName = Game.getVar(R.string.Fadeleaf_Name);
 			

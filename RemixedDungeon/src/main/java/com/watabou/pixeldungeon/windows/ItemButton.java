@@ -17,7 +17,7 @@ import com.watabou.pixeldungeon.items.weapon.melee.KindOfBow;
 import com.watabou.pixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.watabou.pixeldungeon.items.weapon.missiles.Arrow;
 import com.watabou.pixeldungeon.items.weapon.missiles.Boomerang;
-import com.watabou.pixeldungeon.plants.Plant;
+import com.watabou.pixeldungeon.plants.Seed;
 import com.watabou.pixeldungeon.ui.ItemSlot;
 import com.watabou.pixeldungeon.ui.QuickSlot;
 
@@ -102,7 +102,7 @@ class ItemButton extends ItemSlot {
                         enableItem=item instanceof Wand;
                         break;
                     case SEED:
-                        enableItem=(item instanceof Plant.Seed);
+                        enableItem=(item instanceof Seed);
                         break;
                     case INSCRIBABLE:
                         enableItem=(item instanceof Armor || item instanceof BlankScroll);
@@ -115,6 +115,9 @@ class ItemButton extends ItemSlot {
                         break;
                     case UPGRADABLE_WEAPON:
                         enableItem=((item instanceof MeleeWeapon || item instanceof Boomerang) && (item.isUpgradable()));
+                        break;
+                    case ARROWS:
+                        enableItem=(item instanceof Arrow);
                         break;
                 }
                 enable(enableItem);

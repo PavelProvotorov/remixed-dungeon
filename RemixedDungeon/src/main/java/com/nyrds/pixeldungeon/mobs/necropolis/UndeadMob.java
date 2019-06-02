@@ -22,16 +22,17 @@ import com.watabou.utils.Random;
  */
 public class UndeadMob extends Mob {
 	{
-		IMMUNITIES.add(Paralysis.class);
-		IMMUNITIES.add(ToxicGas.class);
-		IMMUNITIES.add(Terror.class);
-		IMMUNITIES.add(Death.class);
-		IMMUNITIES.add(Amok.class);
-		IMMUNITIES.add(Blindness.class);
-		IMMUNITIES.add(Sleep.class);
-		IMMUNITIES.add(Poison.class);
-		IMMUNITIES.add(Vertigo.class);
-		IMMUNITIES.add(Bleeding.class);
+		addImmunity(Paralysis.class);
+		addImmunity(ToxicGas.class);
+		addImmunity(Terror.class);
+		addImmunity(Death.class);
+		addImmunity(Amok.class);
+		addImmunity(Blindness.class);
+		addImmunity(Sleep.class);
+		addImmunity(Poison.class);
+		addImmunity(Vertigo.class);
+		addImmunity(Bleeding.class);
+		addImmunity(Regeneration.class);
 	}
 
 	@Override
@@ -40,10 +41,6 @@ public class UndeadMob extends Mob {
 			if (buff instanceof Burning) {
 				damage(Random.NormalIntRange(1, ht() / 8), buff);
 			}
-		}
-
-		if(buff instanceof Regeneration) {
-			return;
 		}
 
 		super.add(buff);

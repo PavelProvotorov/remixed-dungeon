@@ -11,16 +11,15 @@ import com.nyrds.pixeldungeon.windows.DownloadProgressWindow;
 import com.nyrds.pixeldungeon.windows.WndSurvey;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.InterstitialPoint;
-import com.watabou.pixeldungeon.actors.hero.Hero;
+import com.watabou.pixeldungeon.actors.Char;
 import com.watabou.pixeldungeon.windows.WndError;
 import com.watabou.pixeldungeon.windows.WndOptions;
 
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-
-import androidx.annotation.Nullable;
 
 /**
  * Created by mike on 09.03.2018.
@@ -34,7 +33,7 @@ public class SociologistNPC extends ImmortalNPC implements DownloadStateListener
     @Nullable
     private JSONObject survey;
 
-    public boolean interact(Hero hero) {
+    public boolean interact(Char hero) {
 
         Game.scene().add(new WndOptions(this.name,
                 Game.getVar(R.string.SociologistNPC_Hi),
@@ -55,20 +54,17 @@ public class SociologistNPC extends ImmortalNPC implements DownloadStateListener
 
     @Override
     public void DownloadComplete(String file, final Boolean result) {
-        Game.pushUiTask(new Runnable() {
-            @Override
-            public void run() {
-                if (!result) {
+        Game.pushUiTask(() -> {
+            if (!result) {
+                reportError();
+            } else {
+                try {
+                    survey = JsonHelper.readJsonFromFile(FileSystem.getInternalStorageFile(SURVEY_JSON));
+
+                    Game.scene().add(new WndSurvey(survey));
+
+                } catch (JSONException e) {
                     reportError();
-                } else {
-                    try {
-                        survey = JsonHelper.readJsonFromFile(FileSystem.getInternalStorageFile(SURVEY_JSON));
-
-                        Game.scene().add(new WndSurvey(survey));
-
-                    } catch (JSONException e) {
-                        reportError();
-                    }
                 }
             }
         });

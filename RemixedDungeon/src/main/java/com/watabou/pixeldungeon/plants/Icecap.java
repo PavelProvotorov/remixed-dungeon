@@ -17,16 +17,15 @@
  */
 package com.watabou.pixeldungeon.plants;
 
+import com.nyrds.pixeldungeon.levels.objects.Presser;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.CommonActions;
 import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
 import com.watabou.pixeldungeon.actors.blobs.Freezing;
 import com.watabou.pixeldungeon.actors.buffs.Buff;
 import com.watabou.pixeldungeon.actors.buffs.Frost;
 import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.effects.Speck;
 import com.watabou.pixeldungeon.items.potions.PotionOfFrost;
 import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
 import com.watabou.pixeldungeon.utils.BArray;
@@ -37,28 +36,21 @@ import com.watabou.utils.Random;
 public class Icecap extends Plant {
 
 	public Icecap() {
-		image = 1;
-		plantName = Game.getVar(R.string.Icecap_Name);
+		imageIndex = 1;
 	}
 	
 	@Override
-	public void effect(int pos, Char ch ) {
+	public void effect(int pos, Presser ch ) {
 		PathFinder.buildDistanceMap( pos, BArray.not( Dungeon.level.losBlocking, null ), 1 );
 
 		for (int i=0; i < Dungeon.level.getLength(); i++) {
 			if (PathFinder.distance[i] < Integer.MAX_VALUE) {
-
 				Freezing.affect( i );
 			}
 		}
 	}
-	
-	@Override
-	public String desc() {
-		return Game.getVar(R.string.Icecap_Desc);
-	}
-	
-	public static class Seed extends Plant.Seed {
+
+	public static class Seed extends com.watabou.pixeldungeon.plants.Seed {
 		{
 			plantName = Game.getVar(R.string.Icecap_Name);
 			
@@ -80,14 +72,9 @@ public class Icecap extends Plant {
 			super.execute( hero, action );
 			
 			if (action.equals( CommonActions.AC_EAT )) {
-				
+
 				Buff.prolong( hero, Frost.class, Frost.duration( hero ) * 2);
-				
-				hero.hp(hero.hp() + Random.Int(0, Math.max((hero.ht() - hero.hp()) / 4, 10) ));
-				if (hero.hp() > hero.ht()) {
-					hero.hp(hero.ht());
-				}
-				hero.getSprite().emitter().start( Speck.factory( Speck.HEALING ), 0.4f, 4 );
+				hero.heal( Random.Int(0, Math.max((hero.ht() - hero.hp()) / 4, 10) ), this);
 			}
 		}
 	}

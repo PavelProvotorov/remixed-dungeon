@@ -5,6 +5,7 @@ import com.nyrds.pixeldungeon.ai.Fleeing;
 import com.nyrds.pixeldungeon.ai.MobAi;
 import com.nyrds.pixeldungeon.ai.Wandering;
 import com.nyrds.pixeldungeon.levels.Tools;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.audio.Sample;
@@ -30,6 +31,8 @@ import com.watabou.pixeldungeon.levels.Terrain;
 import com.watabou.pixeldungeon.mechanics.Ballistica;
 import com.watabou.utils.Callback;
 import com.watabou.utils.Random;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by DeadDie on 13.02.2016
@@ -61,7 +64,6 @@ public class ShadowLord extends Boss implements IZapper {
 			Mob mob = new Shadow();
 
 			mob.setState(MobAi.getStateByClass(Wandering.class));
-			Dungeon.level.spawnMob(mob, 1, getPos());
 
 			WandOfBlink.appear(mob, cell);
 		}
@@ -151,7 +153,7 @@ public class ShadowLord extends Boss implements IZapper {
 	}
 
 	@Override
-	public void damage(int dmg, Object src) {
+	public void damage(int dmg, @NotNull NamedEntityKind src) {
 		super.damage(dmg, src);
 		if (src != this) {
 			if (dmg > 0 && cooldown < 0) {
@@ -182,8 +184,7 @@ public class ShadowLord extends Boss implements IZapper {
 		}
 
 		if (Dungeon.level.blobAmountAt(Darkness.class, getPos()) > 0 && hp() < ht()) {
-			getSprite().emitter().burst(Speck.factory(Speck.HEALING), 1);
-			hp(Math.min(hp() + (ht() - hp()) / 4, ht()));
+			heal((ht() - hp()) / 4, Dungeon.level.blobs.get(Darkness.class));
 		}
 
 		if (Dungeon.level.blobAmountAt(Foliage.class, getPos()) > 0) {
@@ -210,7 +211,7 @@ public class ShadowLord extends Boss implements IZapper {
 	}
 
 	@Override
-	public void die(Object cause) {
+	public void die(NamedEntityKind cause) {
 		super.die(cause);
 		yell(Game.getVar(R.string.ShadowLord_Death));
 		Tools.makeEmptyLevel(Dungeon.level);

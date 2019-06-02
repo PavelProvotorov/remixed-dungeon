@@ -24,7 +24,6 @@ import com.watabou.pixeldungeon.actors.Actor;
 import com.watabou.pixeldungeon.actors.Char;
 import com.watabou.pixeldungeon.actors.buffs.Buff;
 import com.watabou.pixeldungeon.actors.buffs.Roots;
-import com.watabou.pixeldungeon.actors.hero.Hero;
 import com.watabou.pixeldungeon.effects.BlobEmitter;
 import com.watabou.pixeldungeon.effects.particles.WebParticle;
 
@@ -45,17 +44,15 @@ public class Web extends Blob {
 				boolean rootable = false;
 
 				if (ch != null) {
-					rootable = true;
-					if(ch instanceof Hero)
-					{
-						if (((Hero) ch).belongings.armor instanceof SpiderArmor){
-							rootable = false;
-						}
-					}
-				}
 
-				if (rootable){
-					Buff.prolong( ch, Roots.class, TICK );
+					rootable = !ch.immunities().contains(getEntityKind());
+
+					if(ch.getBelongings() != null && ch.getBelongings().armor instanceof SpiderArmor)
+						rootable = false;
+					}
+
+					if (rootable){
+						Buff.prolong( ch, Roots.class, TICK );
 				}
 			}
 		}

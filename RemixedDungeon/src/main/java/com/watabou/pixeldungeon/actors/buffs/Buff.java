@@ -17,7 +17,11 @@
  */
 package com.watabou.pixeldungeon.actors.buffs;
 
+import com.nyrds.LuaInterface;
+import com.nyrds.Packable;
 import com.nyrds.android.util.TrackedRuntimeException;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
+import com.nyrds.pixeldungeon.mechanics.buffs.BuffFactory;
 import com.nyrds.pixeldungeon.ml.EventCollector;
 import com.watabou.pixeldungeon.Dungeon;
 import com.watabou.pixeldungeon.actors.Actor;
@@ -27,13 +31,35 @@ import com.watabou.pixeldungeon.actors.mobs.Thief;
 import com.watabou.pixeldungeon.items.Gold;
 import com.watabou.pixeldungeon.items.Item;
 import com.watabou.pixeldungeon.items.bags.Bag;
+import com.watabou.pixeldungeon.sprites.CharSprite;
 import com.watabou.pixeldungeon.ui.BuffIndicator;
 import com.watabou.pixeldungeon.utils.GLog;
 
-public class Buff extends Actor {
-	
+import java.util.HashSet;
+import java.util.Set;
+
+public class Buff extends Actor implements NamedEntityKind, CharModifier {
+
+	protected final Set<String> EMPTY_STRING_SET = new HashSet<>();
 	public Char target;
-	
+
+	@Packable(defaultValue = "1")
+	protected int level=1;
+
+	@Override
+	public String getEntityKind() {
+		return getClass().getSimpleName();
+	}
+
+	@Override
+	public String name() {
+		return getEntityKind();
+	}
+
+	public void attachVisual() {
+		target.getSprite().add(charSpriteStatus());
+	}
+
 	interface itemAction{
 		Item   act(Item srcItem);
 		String actionText(Item srcItem);
@@ -42,7 +68,7 @@ public class Buff extends Actor {
 	
 	public boolean attachTo( Char target ) {
 
-		if (target.immunities().contains( getClass() )) {
+		if (target.immunities().contains( getEntityKind() )) {
 			return false;
 		}
 		
@@ -55,13 +81,13 @@ public class Buff extends Actor {
 	public void detach() {
 		target.remove(this);
 	}
-	
+
 	@Override
 	public boolean act() {
 		deactivate();
 		return true;
 	}
-	
+
 	public int icon() {
 		return BuffIndicator.NONE;
 	}
@@ -81,18 +107,46 @@ public class Buff extends Actor {
 		}
 	}
 
+	@LuaInterface
+	public static Buff permanent( Char target, String buffClass ) {
+		Buff buff = BuffFactory.getBuffByName(buffClass);
+		buff.attachTo(target);
+		buff.deactivate();
+		return buff;
+	}
+
+	@LuaInterface
 	public static<T extends Buff> T permanent( Char target, Class<T> buffClass ) {
 		T buff = affect( target, buffClass );
 		buff.deactivate();
 		return buff;
 	}
 
+	@LuaInterface
+	public static Buff affect( Char target, String buffClass, float duration ) {
+		Buff buff = BuffFactory.getBuffByName(buffClass);
+		buff.attachTo(target);
+		buff.spend( duration );
+		return buff;
+	}
+
+	@LuaInterface
 	public static<T extends Buff> T affect( Char target, Class<T> buffClass, float duration ) {
 		T buff = affect( target, buffClass );
 		buff.spend( duration );
 		return buff;
 	}
-	
+
+	@LuaInterface
+	public static Buff prolong( Char target, String  buffClass, float duration ) {
+		Buff buff = BuffFactory.getBuffByName(buffClass);
+		buff.attachTo(target);
+		buff.postpone( duration );
+		return buff;
+	}
+
+
+	@LuaInterface
 	public static<T extends Buff> T prolong( Char target, Class<T> buffClass, float duration ) {
 		T buff = affect( target, buffClass );
 		buff.postpone( duration );
@@ -109,8 +163,53 @@ public class Buff extends Actor {
 		detach( target.buff( cl ) );
 	}
 
+	public void level(int level ) {
+		this.level = level;
+	}
+
 	public int level() {
-		return 1;
+		return level;
+	}
+
+	public int drBonus() {
+		return 0;
+	}
+
+	public int stealthBonus() { return 0; }
+
+	public float speedMultiplier() { return 1;}
+
+	public int defenceProc(Char defender, Char enemy, int damage)
+	{
+		return damage;
+	}
+
+	@Override
+	public int regenerationBonus() {
+		return 0;
+	}
+
+	@Override
+	public void charAct() {
+	}
+
+	@Override
+	public int dewBonus() {
+		return 0;
+	}
+
+	@Override
+	public Set<String> resistances() {
+		return EMPTY_STRING_SET;
+	}
+
+	@Override
+	public Set<String> immunities() {
+		return EMPTY_STRING_SET;
+	}
+
+	public CharSprite.State charSpriteStatus() {
+		return CharSprite.State.NONE;
 	}
 
 	private void collectOrDropItem(Item item){
@@ -118,7 +217,7 @@ public class Buff extends Actor {
 			Dungeon.level.drop(item, target.getPos()).sprite.drop();
 		}	
 	}
-	
+
 	protected void applyToCarriedItems(itemAction action ){
 		if (target instanceof Hero) {
 			Hero hero = (Hero) target;

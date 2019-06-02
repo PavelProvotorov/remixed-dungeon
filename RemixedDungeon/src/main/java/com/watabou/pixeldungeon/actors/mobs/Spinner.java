@@ -31,7 +31,7 @@ import com.watabou.pixeldungeon.items.food.MysteryMeat;
 import com.watabou.pixeldungeon.scenes.GameScene;
 import com.watabou.utils.Random;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class Spinner extends Mob {
 	
@@ -45,8 +45,8 @@ public class Spinner extends Mob {
 		loot = new MysteryMeat();
 		lootChance = 0.125f;
 
-		RESISTANCES.add( Poison.class );
-		IMMUNITIES.add( Roots.class );
+		addResistance( Poison.class );
+		addImmunity( Roots.class );
 	}
 	
 	@Override
@@ -75,7 +75,7 @@ public class Spinner extends Mob {
 	}
 	
 	@Override
-	public int attackProc(@NonNull Char enemy, int damage ) {
+	public int attackProc(@NotNull Char enemy, int damage ) {
 		if (Random.Int( 2 ) == 0) {
 			Buff.affect( enemy, Poison.class ).set( Random.Int( 7, 9 ) * Poison.durationFactor( enemy ) );
 			setState(MobAi.getStateByClass(Fleeing.class));

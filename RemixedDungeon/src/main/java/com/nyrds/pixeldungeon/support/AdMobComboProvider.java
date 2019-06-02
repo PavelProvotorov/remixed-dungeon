@@ -42,31 +42,27 @@ public class AdMobComboProvider implements AdsUtilsCommon.IInterstitialProvider,
 
     @Override
     public void showInterstitial(final InterstitialPoint ret) {
-        Game.instance().runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                if (mInterstitialAd == null) {
-                    EventCollector.logException("mInterstitialAd == null");
-                    AdsUtilsCommon.interstitialFailed(AdMobComboProvider.this, ret);
-                    return;
-                }
-
-                if (!mInterstitialAd.isLoaded()) {
-                    EventCollector.logException("not loaded");
-                    AdsUtilsCommon.interstitialFailed(AdMobComboProvider.this, ret);
-                    return;
-                }
-
-                mInterstitialAd.setAdListener(new AdListener() {
-                    @Override
-                    public void onAdClosed() {
-                        requestNewInterstitial();
-                        ret.returnToWork(true);
-                    }
-                });
-                mInterstitialAd.show();
+        Game.instance().runOnUiThread(() -> {
+            if (mInterstitialAd == null) {
+                EventCollector.logException("mInterstitialAd == null");
+                AdsUtilsCommon.interstitialFailed(AdMobComboProvider.this, ret);
+                return;
             }
+
+            if (!mInterstitialAd.isLoaded()) {
+                EventCollector.logException("not loaded");
+                AdsUtilsCommon.interstitialFailed(AdMobComboProvider.this, ret);
+                return;
+            }
+
+            mInterstitialAd.setAdListener(new AdListener() {
+                @Override
+                public void onAdClosed() {
+                    requestNewInterstitial();
+                    ret.returnToWork(true);
+                }
+            });
+            mInterstitialAd.show();
         });
 
     }
@@ -83,6 +79,11 @@ public class AdMobComboProvider implements AdsUtilsCommon.IInterstitialProvider,
         adView.loadAd(AdMob.makeAdRequest());
     }
 
+    @Override
+    public boolean isReady() {
+        return true;
+    }
+
     private class AdmobBannerListener extends AdListener {
 
         @Override
@@ -91,7 +92,7 @@ public class AdMobComboProvider implements AdsUtilsCommon.IInterstitialProvider,
         }
 
         public void onAdFailedToLoad(int result) {
-            EventCollector.logException( "admob banner" + Integer.toString(result));
+            EventCollector.logException( "admob banner" + result);
             AdsUtilsCommon.bannerFailed(AdMobComboProvider.this);
         }
     }
@@ -105,7 +106,7 @@ public class AdMobComboProvider implements AdsUtilsCommon.IInterstitialProvider,
         @Override
         public void onAdFailedToLoad(int errorCode) {
             super.onAdFailedToLoad(errorCode);
-            EventCollector.logException("admob_error " + Integer.toString(errorCode));
+            EventCollector.logException("admob_error " + errorCode);
         }
 
         @Override

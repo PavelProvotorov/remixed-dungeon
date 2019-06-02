@@ -1,5 +1,6 @@
 package com.nyrds.pixeldungeon.mechanics.spells;
 
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.gltextures.SmartTexture;
 import com.watabou.gltextures.TextureCache;
@@ -15,15 +16,15 @@ import com.watabou.pixeldungeon.scenes.GameScene;
 import com.watabou.pixeldungeon.utils.GLog;
 import com.watabou.pixeldungeon.utils.Utils;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
-public class Spell {
+public class Spell implements NamedEntityKind {
 
     protected      int level             = 1;
     protected      int spellCost         = 5;
 
     protected float castTime = 1f;
-    protected float duration = 10f;
+    protected float cooldown = 1f;
 
     protected String targetingType;
     protected String magicAffinity;
@@ -43,13 +44,31 @@ public class Spell {
         return true;
     }
 
-    public boolean canCast(@NonNull final Char chr, boolean reallyCast) {
+    public boolean canCast(@NotNull final Char chr, boolean reallyCast) {
+
+        float timeToCast = chr.spellCooldown(getClassName())-cooldown;
+        if(timeToCast < 0) {
+
+            if(reallyCast) {
+                GLog.w(Utils.format(R.string.Spells_NotTooFast, name));
+            }
+
+            return false;
+        }
+
         if (chr instanceof Hero) {
             final Hero hero = (Hero) chr;
 
+            if(hero.getControlTarget().getId()!=hero.getId()) {
+                if(reallyCast) {
+                    GLog.w(Utils.format(R.string.Spells_NotInOwnBody, name));
+                }
+                return false;
+            }
+
             if (!hero.enoughSP(spellCost())) {
                 if(reallyCast) {
-                    GLog.w(Utils.format(Game.getVar(R.string.Spells_NotEnoughSP), name));
+                    GLog.w(Utils.format(R.string.Spells_NotEnoughSP, name));
                 }
                 return false;
             }
@@ -59,7 +78,7 @@ public class Spell {
         return true;
     }
 
-    public boolean cast(@NonNull final Char chr) {
+    public boolean cast(@NotNull final Char chr) {
 
         if (!chr.isAlive()) {
             return false;
@@ -100,12 +119,14 @@ public class Spell {
     }
 
     protected void castCallback(Char chr) {
+        chr.spellCasted(getClassName());
+
         if (chr instanceof Hero) {
-            ((Hero) chr).spendSoulPoints(spellCost());
+            ((Hero) chr).spendSkillPoints(spellCost());
         }
     }
 
-    public String getSpellClass() {
+    public String getClassName() {
         return getClass().getSimpleName();
     }
 
@@ -147,10 +168,10 @@ public class Spell {
     }
 
     public int getLevelModifier(Char chr) {
-        return chr.magicLvl() - level;
+        return chr.skillLevel() - level;
     }
 
-    @NonNull
+    @NotNull
     public SpellItem itemForSlot() {
         if (spellItem == null) {
             spellItem = new SpellItem() {
@@ -185,12 +206,12 @@ public class Spell {
 
                 @Override
                 public String getClassName() {
-                    return Spell.this.getSpellClass();
+                    return Spell.this.getClassName();
                 }
 
                 @Override
                 public Item quickSlotContent() {
-                    quantity(Dungeon.hero.getSoulPoints()/spellCost());
+                    quantity(Dungeon.hero.getSkillPoints()/spellCost());
                     return this;
                 }
 
@@ -204,13 +225,22 @@ public class Spell {
                     return true;
                 }
 
-                //                @Override
-//                public ItemSprite.Glowing glowing() {
-//                    return new ItemSprite.Glowing(0xffffffff);
-//                }
             };
         }
         return spellItem;
+    }
+
+    public float getCooldownFactor(Char chr) {
+        float chrCooldown = chr.spellCooldown(getClassName());
+        if(chrCooldown > cooldown) {
+            return 1;
+        }
+        return chrCooldown/cooldown;
+    }
+
+    @Override
+    public String getEntityKind() {
+        return getClassName();
     }
 
     public abstract class SpellItem extends Item {

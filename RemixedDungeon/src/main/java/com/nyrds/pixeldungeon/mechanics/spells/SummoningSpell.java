@@ -2,6 +2,7 @@ package com.nyrds.pixeldungeon.mechanics.spells;
 
 import com.nyrds.pixeldungeon.ml.R;
 import com.nyrds.pixeldungeon.mobs.common.MobFactory;
+import com.nyrds.pixeldungeon.utils.CharsList;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.Dungeon;
 import com.watabou.pixeldungeon.actors.Char;
@@ -15,9 +16,9 @@ import com.watabou.pixeldungeon.plants.Sungrass;
 import com.watabou.pixeldungeon.utils.GLog;
 import com.watabou.pixeldungeon.utils.Utils;
 
-import java.util.Collection;
+import org.jetbrains.annotations.NotNull;
 
-import androidx.annotation.NonNull;
+import java.util.Collection;
 
 /**
  * Created by DeadDie on 02.09.2017
@@ -29,7 +30,7 @@ public class SummoningSpell extends Spell {
     protected String mobKind = "Rat";
 
     @Override
-    public boolean canCast(@NonNull Char chr, boolean reallyCast) {
+    public boolean canCast(@NotNull Char chr, boolean reallyCast) {
         if (!super.canCast(chr, reallyCast)) {
             return false;
         }
@@ -47,7 +48,7 @@ public class SummoningSpell extends Spell {
     }
 
     @Override
-    public boolean cast(@NonNull Char chr){
+    public boolean cast(@NotNull Char chr){
         if(!super.cast(chr)) {
 	        return false;
         }
@@ -60,9 +61,9 @@ public class SummoningSpell extends Spell {
 
         if (level.cellValid(spawnPos)) {
             Mob pet = MobFactory.mobByName(mobKind);
-	        if(chr instanceof Hero) {
-		        Hero hero = (Hero)chr;
-		        pet = Mob.makePet(pet, hero);
+
+            if(chr instanceof Hero) {
+		        pet = Mob.makePet(pet, chr.getId());
 	        } else if(chr instanceof Mob) {
 		        Mob mob = (Mob) chr;
 		        pet.setFraction(mob.fraction());
@@ -70,7 +71,7 @@ public class SummoningSpell extends Spell {
 		        pet.setFraction(Fraction.DUNGEON);
 	        }
 
-            pet.setPos(spawnPos);
+	        pet.setPos(spawnPos);
             level.spawnMob(pet,0,chr.getPos());
         }
         
@@ -84,11 +85,12 @@ public class SummoningSpell extends Spell {
     }
 
     private int getNumberOfSummons(Hero hero){
-        Collection<Mob> pets = hero.getPets();
+        Collection<Integer> pets = hero.getPets();
 
         int n = 0;
-        for (Mob mob : pets) {
-            if (mob.isAlive() && mob.getMobClassName().equals(mobKind) ) {
+        for (Integer mobId : pets) {
+            Mob mob = (Mob)CharsList.getById(mobId);
+            if (mob != null && mob.isAlive() && mob.getEntityKind().equals(mobKind) ) {
                 n++;
             }
         }

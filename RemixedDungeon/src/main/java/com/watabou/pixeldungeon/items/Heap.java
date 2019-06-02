@@ -19,6 +19,7 @@ package com.watabou.pixeldungeon.items;
 
 
 import com.nyrds.Packable;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.audio.Sample;
@@ -39,7 +40,7 @@ import com.watabou.pixeldungeon.effects.particles.ElmoParticle;
 import com.watabou.pixeldungeon.effects.particles.FlameParticle;
 import com.watabou.pixeldungeon.effects.particles.ShadowParticle;
 import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.plants.Plant.Seed;
+import com.watabou.pixeldungeon.plants.Seed;
 import com.watabou.pixeldungeon.sprites.ItemSprite;
 import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
 import com.watabou.pixeldungeon.utils.GLog;
@@ -47,16 +48,26 @@ import com.watabou.utils.Bundlable;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import androidx.annotation.NonNull;
-
-public class Heap implements Bundlable {
+public class Heap implements Bundlable, NamedEntityKind {
 
 	private static final int SEEDS_TO_POTION = 3;
-	
+
+	@Override
+	public String getEntityKind() {
+		return getClass().getSimpleName();
+	}
+
+	@Override
+	public String name() {
+		return getEntityKind();
+	}
+
 	public enum Type {
 		HEAP, 
 		FOR_SALE, 
@@ -68,7 +79,7 @@ public class Heap implements Bundlable {
 		MIMIC
 	}
 
-	@NonNull
+	@NotNull
 	public Type type = Type.HEAP;
 
 	public static Map<Type, Float> regularHeaps = new HashMap<>();
@@ -84,7 +95,7 @@ public class Heap implements Bundlable {
 	
 	public ItemSprite sprite;
 
-	@NonNull
+	@NotNull
 	public LinkedList<Item> items = new LinkedList<>();
 
 	public String imageFile() {

@@ -245,7 +245,7 @@ public abstract class RegularLevel extends CustomLevel {
 			return false;
 		}
 
-		Room[] ra = rooms.toArray(new Room[rooms.size()]);
+		Room[] ra = rooms.toArray(new Room[0]);
 		for (int i = 0; i < ra.length - 1; i++) {
 			for (int j = i + 1; j < ra.length; j++) {
 				ra[i].addNeighbor(ra[j]);
@@ -679,7 +679,7 @@ public abstract class RegularLevel extends CustomLevel {
 			Room room = randomRoom(Room.Type.STANDARD, 1);
 			if (room != null) {
 				int pos = room.random(this);
-				if (passable[pos]) {
+				if (passable[pos] && getTopLevelObject(pos) == null) {
 					return pos;
 				}
 			}

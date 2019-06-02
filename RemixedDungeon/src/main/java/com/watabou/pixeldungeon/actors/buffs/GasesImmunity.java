@@ -23,25 +23,33 @@ import com.watabou.pixeldungeon.actors.blobs.ToxicGas;
 import com.watabou.pixeldungeon.ui.BuffIndicator;
 
 import java.util.HashSet;
+import java.util.Set;
 
 public class GasesImmunity extends FlavourBuff {
 	
 	public static final float DURATION	= 5f;
-	
+
+	private static final Set<String> FULL;
+	static {
+		FULL = new HashSet<>();
+
+		FULL.add( ToxicGas.class.getSimpleName() );
+		FULL.add( Paralysis.class.getSimpleName() );
+		FULL.add( Vertigo.class.getSimpleName() );
+	}
+
 	@Override
 	public int icon() {
 		return BuffIndicator.IMMUNITY;
 	}
 	
 	@Override
-	public String toString() {
+	public String name() {
 		return Game.getVar(R.string.GasesImmunity_Info);
 	}
-	
-	public static final HashSet<Class<?>> IMMUNITIES = new HashSet<>();
-	static {
-		IMMUNITIES.add( Paralysis.class );
-		IMMUNITIES.add( ToxicGas.class );
-		IMMUNITIES.add( Vertigo.class );
+
+	@Override
+	public Set<String> immunities() {
+		return FULL;
 	}
 }

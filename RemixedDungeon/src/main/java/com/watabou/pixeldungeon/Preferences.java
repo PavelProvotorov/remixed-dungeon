@@ -17,11 +17,13 @@
  */
 package com.watabou.pixeldungeon;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 
 import com.nyrds.android.util.UserKey;
 import com.nyrds.pixeldungeon.ml.EventCollector;
 import com.watabou.noosa.Game;
+import com.watabou.pixeldungeon.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -129,7 +131,7 @@ public enum Preferences {
 
 	public boolean checkString(String key) {
 		try {
-			get().getString(key, "");
+			get().getString(key, Utils.EMPTY_STRING);
 		} catch (ClassCastException e) {
 			return false;
 		}
@@ -173,7 +175,7 @@ public enum Preferences {
 			}
 
 			if (get().contains(key)) {
-				String val = "";
+				String val = Utils.EMPTY_STRING;
 
 				if (checkString(key)) {
 					val = get().getString(key, defValue);
@@ -221,12 +223,16 @@ public enum Preferences {
 		put(key, val);
 	}
 
+	@SuppressLint("ApplySharedPref")
 	public void put(String key, String value) {
 
 		stringCache.put(key, value);
 
 		String scrambledVal = UserKey.encrypt(value);
 		String scrambledKey = UserKey.encrypt(key);
-		get().edit().putString(scrambledKey, scrambledVal).apply();
+
+		if(!get().edit().putString(scrambledKey, scrambledVal).commit()) {
+			EventCollector.logException("Preferences commit failed");
+		}
 	}
 }

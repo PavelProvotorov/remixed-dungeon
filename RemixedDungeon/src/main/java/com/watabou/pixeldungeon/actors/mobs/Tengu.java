@@ -17,6 +17,7 @@
  */
 package com.watabou.pixeldungeon.actors.mobs;
 
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.R;
 import com.nyrds.pixeldungeon.mobs.common.IZapper;
 import com.watabou.noosa.Game;
@@ -54,8 +55,8 @@ public class Tengu extends Boss implements IZapper {
 		exp = 20;
 		defenseSkill = 20;
 		
-		RESISTANCES.add( ToxicGas.class );
-		RESISTANCES.add( Poison.class );
+		addResistance( ToxicGas.class );
+		addResistance( Poison.class );
 	}
 	
 	private int timeToJump = JUMP_DELAY;
@@ -76,7 +77,7 @@ public class Tengu extends Boss implements IZapper {
 	}
 	
 	@Override
-	public void die( Object cause ) {
+	public void die(NamedEntityKind cause) {
 
 		if ( Dungeon.heroClass != HeroClass.NECROMANCER && Dungeon.heroClass != HeroClass.GNOLL){
 			Dungeon.level.drop( new TomeOfMastery(), getPos() ).sprite.drop();
@@ -165,9 +166,9 @@ public class Tengu extends Boss implements IZapper {
 	public void notice() {
 		super.notice();
 		String tenguYell = Game.getVar(R.string.Tengu_Info2);
-		if (Dungeon.hero.heroClass.getGender() == Utils.FEMININE) {
+		if (Dungeon.hero.getHeroClass().getGender() == Utils.FEMININE) {
 			tenguYell = Game.getVar(R.string.Tengu_Info3);
 		}
-		yell(Utils.format(tenguYell, Dungeon.hero.heroClass.title()));
+		yell(Utils.format(tenguYell, Dungeon.hero.getHeroClass().title()));
 	}	
 }

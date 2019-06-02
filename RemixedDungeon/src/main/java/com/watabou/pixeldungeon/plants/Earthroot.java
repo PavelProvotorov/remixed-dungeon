@@ -17,6 +17,7 @@
  */
 package com.watabou.pixeldungeon.plants;
 
+import com.nyrds.pixeldungeon.levels.objects.Presser;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Camera;
 import com.watabou.noosa.Game;
@@ -38,13 +39,13 @@ import com.watabou.utils.Bundle;
 public class Earthroot extends Plant {
 
 	public Earthroot() {
-		image = 5;
-		plantName = Game.getVar(R.string.Earthroot_Name);
+		imageIndex = 5;
 	}
 
-	public void effect(int pos, Char ch) {
-		if (ch != null) {
-			Buff.affect(ch, Armor.class).level = ch.ht();
+	public void effect(int pos, Presser ch) {
+		if (ch instanceof Char) {
+			Char chr = (Char)ch;
+			Buff.affect(chr, Armor.class).level = chr.ht();
 		}
 
 		if (Dungeon.visible[pos]) {
@@ -52,13 +53,8 @@ public class Earthroot extends Plant {
 			Camera.main.shake(1, 0.4f);
 		}
 	}
-	
-	@Override
-	public String desc() {
-		return Game.getVar(R.string.Earthroot_Desc);
-	}
-	
-	public static class Seed extends Plant.Seed {
+
+	public static class Seed extends com.watabou.pixeldungeon.plants.Seed {
 		{
 			plantName = Game.getVar(R.string.Earthroot_Name);
 			
@@ -117,8 +113,13 @@ public class Earthroot extends Plant {
 				return 0;
 			}
 		}
-		
-		public void level( int value ) {
+
+		@Override
+		public int defenceProc(Char defender, Char enemy, int damage) {
+			return absorb(damage);
+		}
+
+		public void level(int value ) {
 			if (level < value) {
 				level = value;
 			}
@@ -130,7 +131,7 @@ public class Earthroot extends Plant {
 		}
 		
 		@Override
-		public String toString() {
+		public String name() {
 			return Game.getVar(R.string.Earthroot_Buff);
 		}
 		

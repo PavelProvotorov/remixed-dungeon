@@ -18,6 +18,7 @@
 package com.watabou.pixeldungeon.plants;
 
 import com.nyrds.Packable;
+import com.nyrds.pixeldungeon.levels.objects.Presser;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.CommonActions;
@@ -27,7 +28,6 @@ import com.watabou.pixeldungeon.actors.buffs.Buff;
 import com.watabou.pixeldungeon.actors.buffs.Charm;
 import com.watabou.pixeldungeon.actors.hero.Hero;
 import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.Speck;
 import com.watabou.pixeldungeon.effects.particles.ShaftParticle;
 import com.watabou.pixeldungeon.items.potions.PotionOfHealing;
 import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
@@ -38,13 +38,12 @@ import com.watabou.utils.Random;
 public class Sungrass extends Plant {
 
 	public Sungrass() {
-		image = 4;
-		plantName = Game.getVar(R.string.Sungrass_Name);
+		imageIndex = 4;
 	}
 
-	public void effect(int pos, Char ch) {
-		if (ch != null) {
-			Buff.affect(ch, Health.class);
+	public void effect(int pos, Presser ch) {
+		if (ch instanceof Char) {
+			Buff.affect((Char)(ch), Health.class);
 		}
 
 		if (Dungeon.visible[pos]) {
@@ -52,12 +51,7 @@ public class Sungrass extends Plant {
 		}
 	}
 
-	@Override
-	public String desc() {
-		return Game.getVar(R.string.Sungrass_Desc);
-	}
-
-	public static class Seed extends Plant.Seed {
+	public static class Seed extends com.watabou.pixeldungeon.plants.Seed {
 		{
 			plantName = Game.getVar(R.string.Sungrass_Name);
 
@@ -82,11 +76,7 @@ public class Sungrass extends Plant {
 
 				Buff.affect(hero, Charm.class, Charm.durationFactor(hero) * Random.IntRange(10, 15));
 
-				hero.hp(hero.hp() + Random.Int(0, Math.max((hero.ht() - hero.hp()) / 4, 15)));
-				if (hero.hp() > hero.ht()) {
-					hero.hp(hero.ht());
-				}
-				hero.getSprite().emitter().start(Speck.factory(Speck.HEALING), 0.4f, 4);
+				hero.heal(Random.Int(0, Math.max((hero.ht() - hero.hp()) / 4, 15)), this);
 			}
 		}
 	}
@@ -109,8 +99,7 @@ public class Sungrass extends Plant {
 			if (target.getPos() != pos || target.hp() >= target.ht()) {
 				detach();
 			} else {
-				target.hp(Math.min(target.ht(), target.hp()+Math.max( target.ht() / 10, 1)));
-				target.getSprite().emitter().burst(Speck.factory(Speck.HEALING), 1);
+				target.heal(Math.max( target.ht() / 10, 1),this);
 			}
 			spend(STEP);
 			return true;
@@ -122,7 +111,7 @@ public class Sungrass extends Plant {
 		}
 
 		@Override
-		public String toString() {
+		public String name() {
 			return Game.getVar(R.string.Sungrass_Buff);
 		}
 	}

@@ -142,15 +142,15 @@ import com.watabou.pixeldungeon.plants.Earthroot;
 import com.watabou.pixeldungeon.plants.Fadeleaf;
 import com.watabou.pixeldungeon.plants.Firebloom;
 import com.watabou.pixeldungeon.plants.Icecap;
-import com.watabou.pixeldungeon.plants.Plant;
+import com.watabou.pixeldungeon.plants.Seed;
 import com.watabou.pixeldungeon.plants.Sorrowmoss;
 import com.watabou.pixeldungeon.plants.Sungrass;
 import com.watabou.utils.Random;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.Locale;
-
-import androidx.annotation.NonNull;
 
 public class Generator {
 
@@ -161,7 +161,7 @@ public class Generator {
 		SCROLL(40, Scroll.class),
 		WAND(4, Wand.class),
 		RING(2, Ring.class),
-		SEED(5, Plant.Seed.class),
+		SEED(5, Seed.class),
 		FOOD(0, Food.class),
 		GOLD(50, Gold.class),
 		RANGED(2, KindOfBow.class),
@@ -191,7 +191,7 @@ public class Generator {
 			return item instanceof Bag ? Integer.MAX_VALUE : Integer.MAX_VALUE - 1;
 		}
 
-		@NonNull
+		@NotNull
 		public Item random() {
 			int index;
 			do {

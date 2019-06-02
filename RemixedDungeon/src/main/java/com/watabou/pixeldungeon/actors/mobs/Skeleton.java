@@ -18,6 +18,7 @@
 package com.watabou.pixeldungeon.actors.mobs;
 
 import com.nyrds.pixeldungeon.levels.NecroBossLevel;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.R;
 import com.nyrds.pixeldungeon.mobs.necropolis.UndeadMob;
 import com.watabou.noosa.Game;
@@ -69,7 +70,7 @@ public class Skeleton extends UndeadMob {
 	}
 	
 	@Override
-	public void die( Object cause ) {
+	public void die(NamedEntityKind cause) {
 		
 		super.die( cause );
 		
@@ -77,7 +78,7 @@ public class Skeleton extends UndeadMob {
 		for (int i=0; i < Level.NEIGHBOURS4.length; i++) {
 			Char ch = findChar( getPos() + Level.NEIGHBOURS4[i] );
 			if (ch != null && ch.isAlive()) {
-				int damage = Math.max( 0,  damageRoll() - Random.IntRange( 0, ch.dr() / 2 ) );
+				int damage = Math.max( 0,  damageRoll() - ch.defenceRoll(this) / 2 );
 				ch.damage( damage, this );
 				if (ch == Dungeon.hero && !ch.isAlive()) {
 					heroKilled = true;

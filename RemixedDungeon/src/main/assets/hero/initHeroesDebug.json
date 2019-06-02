@@ -11,7 +11,7 @@
         },
 
       {
-        "kind": "Ankh",
+        "kind": "TomeOfMastery",
         "level":10
       },
       {
@@ -22,26 +22,29 @@
         "kind": "SacrificialSword"
       },
       {
-        "kind": "Quiver"
-      },
-      {
         "kind": "ScrollOfMagicMapping",
         "quantity": 100
       },
       {
-        "kind": "ScrollOfMirrorImage",
+        "kind": "DewVial"
+      },
+      {
+        "kind": "Ankh",
+        "level": 5
+      },
+      {
+        "kind": "Dewdrop",
         "quantity": 100
       },
       {
-        "kind": "PotionOfLevitation"
-      },
-      {
-        "kind": "CandyOfDeath",
+        "kind": "Firebloom.Seed",
         "quantity": 100
       }
     ],
     "str": 1500,
-    "hp": 20000,
+    "hp": 20,
+    "sp" : 100,
+    "sl" : 100,
     "magicAffinity": "Common"
   },
   "non_expert": {
@@ -61,7 +64,11 @@
       {
         "kind": "PotionOfStrength"
       }
-    ]
+    ],
+    "isSpellUser": true,
+    "magicAffinity": "Combat",
+    "sp": 1000,
+    "maxSp": 1000
   },
   "MAGE": {
     "items": [
@@ -82,7 +89,7 @@
     ],
     "isSpellUser": true,
     "magicAffinity": "Elemental",
-    "startingSp": 10,
+    "sp": 10,
     "maxSp": 10
   },
   "ROGUE": {
@@ -95,7 +102,11 @@
       {
         "kind": "ScrollOfMagicMapping"
       }
-    ]
+    ],
+    "isSpellUser": true,
+    "magicAffinity": "Rogue",
+    "sp": 10,
+    "maxSp": 10
   },
   "HUNTRESS": {
     "items": [
@@ -124,6 +135,11 @@
         "identified": true
       },
       {
+        "kind": "FrostArrow",
+        "quantity": 20,
+        "identified": true
+      },
+      {
         "kind": "ElvenDagger",
         "identified": true
       }
@@ -133,6 +149,11 @@
         "kind": "CommonArrow"
       }
     ],
+
+    "immunities": [
+      "Roots"
+    ],
+
     "str": 9,
     "hp": 15
   },
@@ -154,8 +175,8 @@
         "kind": "PotionOfHealing"
       }
     ],
-    "startingSp": 10000,
-    "maxSp": 10,
+    "sp": 100,
+    "maxSp": 100,
     "isSpellUser": true,
     "magicAffinity": "Necromancy"
   },
@@ -189,5 +210,19 @@
     "friendlyMobs":["Gnoll","Shaman","Brute","Shielded"],
     "str": 15,
     "hp": 5
+  },
+  "LICH": {
+    "immunities": [
+      "Paralysis",
+      "ToxicGas",
+      "Terror",
+      "Death",
+      "Amok",
+      "Blindness",
+      "Sleep",
+      "Poison",
+      "Vertigo",
+      "Bleeding"
+    ]
   }
 }

@@ -65,19 +65,27 @@ public enum Rankings {
 		
 		rec.info	    = resultDescription;
 		rec.win		    = winLevel  != gameOver.LOSE;
-		rec.heroClass	= hero.heroClass;
+		rec.heroClass	= hero.getHeroClass();
 		rec.score	    = score(winLevel);
 		rec.mod			= RemixedDungeon.activeMod();
 		rec.gameId      = Dungeon.gameId;
 
 
 		Map<String,String> resDesc = new HashMap<>();
-		resDesc.put("class",     hero.heroClass.toString());
-		resDesc.put("subclass",  Dungeon.hero.subClass.toString());
+		resDesc.put("class",     hero.getHeroClass().toString());
+		resDesc.put("subclass",  hero.getSubClass().toString());
+		resDesc.put("heroLevel", Integer.toString(hero.lvl()));
+		resDesc.put("gameId",    Dungeon.gameId);
 
+		resDesc.put("win",       winLevel.name());
 		resDesc.put("resDesc",  resultDescription);
-		resDesc.put("mod",      rec.mod);
 		resDesc.put("duration", Float.toString(Statistics.duration));
+
+		resDesc.put("difficulty", Integer.toString(Game.getDifficulty()));
+		resDesc.put("version",   Game.version);
+		resDesc.put("mod",       ModdingMode.activeMod());
+		resDesc.put("modVersion",Integer.toString(ModdingMode.activeModVersion()));
+		resDesc.put("donation",  Integer.toString(RemixedDungeon.donated()));
 
 		EventCollector.logEvent("gameover", resDesc);
 
@@ -90,7 +98,7 @@ public enum Rankings {
 			Dungeon.saveGame(gameFile);
 			rec.gameFile = gameFile;
 		} catch (IOException e) {
-			rec.gameFile = "";
+			rec.gameFile = Utils.EMPTY_STRING;
 			EventCollector.logException(e);
 		}
 

@@ -19,6 +19,7 @@ package com.watabou.pixeldungeon.items.weapon;
 
 import com.nyrds.android.util.TrackedRuntimeException;
 import com.nyrds.android.util.Util;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.EventCollector;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
@@ -49,10 +50,9 @@ import com.watabou.utils.Bundlable;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import androidx.annotation.NonNull;
 
 public class Weapon extends KindOfWeapon {
 
@@ -115,7 +115,7 @@ public class Weapon extends KindOfWeapon {
 		int encumbrance = STR - hero.effectiveSTR();
 		
 		if (this instanceof MissileWeapon) {
-			switch (hero.heroClass) {
+			switch (hero.getHeroClass()) {
 			case WARRIOR:
 				encumbrance += 3;
 				break;
@@ -127,7 +127,7 @@ public class Weapon extends KindOfWeapon {
 		}
 		
 		if (this instanceof MeleeWeapon && !(this instanceof KindOfBow)) {
-			if( hero.heroClass == HeroClass.ELF) {
+			if( hero.getHeroClass() == HeroClass.ELF) {
 				encumbrance += 3;
 			}
 		}
@@ -141,7 +141,7 @@ public class Weapon extends KindOfWeapon {
 	public float speedFactor( Hero hero ) {
 
 		int encumbrance = STR - hero.effectiveSTR();
-		if (this instanceof MissileWeapon && hero.heroClass == HeroClass.HUNTRESS) {
+		if (this instanceof MissileWeapon && hero.getHeroClass() == HeroClass.HUNTRESS) {
 			encumbrance -= 2;
 		}
 		
@@ -156,13 +156,13 @@ public class Weapon extends KindOfWeapon {
 		int damage = super.damageRoll( hero );
 		int exStr = hero.effectiveSTR() - STR;
 
-		if ((hero.rangedWeapon != null) == (hero.heroClass == HeroClass.HUNTRESS)) {
+		if ((hero.rangedWeapon != null) == (hero.getHeroClass() == HeroClass.HUNTRESS)) {
 			if (exStr > 0) {
 				damage += Random.IntRange( 0, exStr );
 			}
 		}
 
-		if(hero.heroClass == HeroClass.GNOLL) {
+		if(hero.getHeroClass() == HeroClass.GNOLL) {
 			damage += Random.IntRange(0, exStr);
 		}
 
@@ -184,7 +184,7 @@ public class Weapon extends KindOfWeapon {
 		return super.upgrade();
 	}
 	
-	@NonNull
+	@NotNull
     @Override
 	public String toString() {
 		return levelKnown ? Utils.format("%s: %d", super.toString(), STR ) : super.toString();
@@ -246,9 +246,9 @@ public class Weapon extends KindOfWeapon {
 		}
 	}
 
-	public static abstract class Enchantment implements Bundlable {
+	public static abstract class Enchantment implements Bundlable, NamedEntityKind {
 		
-		final String[] TXT_NAME = Utils.getClassParams(getClass().getSimpleName(), "Name", new String[]{"","",""}, true);
+		final String[] TXT_NAME = Utils.getClassParams(getEntityKind(), "Name", new String[]{Utils.EMPTY_STRING, Utils.EMPTY_STRING, Utils.EMPTY_STRING}, true);
 		
 		private static final Class<?>[] enchants = new Class<?>[]{
 			Fire.class, Poison.class, Death.class, Paralysis.class, Leech.class,
@@ -265,6 +265,16 @@ public class Weapon extends KindOfWeapon {
 				EventCollector.logException(e);
 			}
 			return weaponName;
+		}
+
+		@Override
+		public String name() {
+			return getEntityKind();
+		}
+
+		@Override
+		public String getEntityKind() {
+			return getClass().getSimpleName();
 		}
 
 		@Override

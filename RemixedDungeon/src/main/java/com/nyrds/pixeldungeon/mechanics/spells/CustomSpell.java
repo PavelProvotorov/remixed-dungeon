@@ -4,9 +4,8 @@ import com.nyrds.pixeldungeon.mechanics.LuaScript;
 import com.watabou.noosa.StringsManager;
 import com.watabou.pixeldungeon.actors.Char;
 
+import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.LuaTable;
-
-import androidx.annotation.NonNull;
 
 /**
  * Created by mike on 02.06.2018.
@@ -32,7 +31,7 @@ public class CustomSpell extends Spell {
         info = StringsManager.maybeId(desc.rawget("info").checkjstring());
         magicAffinity = StringsManager.maybeId(desc.rawget("magicAffinity").checkjstring());
         targetingType = desc.rawget("targetingType").checkjstring();
-        duration      = (float) desc.rawget("duration").checkdouble();
+        cooldown      = (float) desc.rawget("cooldown").checkdouble();
 
         level = (int) desc.rawget("level").checkdouble();
         spellCost = (int) desc.rawget("spellCost").checkdouble();
@@ -50,7 +49,7 @@ public class CustomSpell extends Spell {
     }
 
     @Override
-    public boolean cast(@NonNull Char chr) {
+    public boolean cast(@NotNull Char chr) {
         if(!super.cast(chr)) {
             return false;
         }
@@ -64,7 +63,7 @@ public class CustomSpell extends Spell {
     }
 
     @Override
-    public String getSpellClass() {
+    public String getClassName() {
         return scriptFile;
     }
 }

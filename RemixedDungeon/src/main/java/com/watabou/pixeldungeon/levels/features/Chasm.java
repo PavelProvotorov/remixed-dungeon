@@ -40,7 +40,7 @@ import com.watabou.pixeldungeon.utils.Utils;
 import com.watabou.pixeldungeon.windows.WndOptions;
 import com.watabou.utils.Random;
 
-public class Chasm {
+public class Chasm implements Hero.Doom {
 
 	public static boolean jumpConfirmed = false;
 	
@@ -83,22 +83,12 @@ public class Chasm {
 		Camera.main.shake( 4, 0.2f );
 		
 		Buff.prolong( hero, Cripple.class, Cripple.DURATION );
-		hero.damage( Random.IntRange( hero.ht() / 3, hero.ht() / 2 ), new Hero.Doom() {
-			@Override
-			public void onDeath() {
-				Badges.validateDeathFromFalling();
-				
-				Dungeon.fail( Utils.format( ResultDescriptions.getDescription(ResultDescriptions.Reason.FALL), Dungeon.depth ) );
-				GLog.n(Game.getVar(R.string.Chasm_Info));
-			}
-		} );
+		hero.damage( Random.IntRange( hero.ht() / 3, hero.ht() / 2 ), new Chasm() );
 	}
 
 	private static void mobFall( Mob mob ) {
-		// Destroy instead of kill to prevent dropping loot
-		mob.destroy();
-		
-		mob.getSprite().removeAllStates();
+		mob.die(new Chasm());
+
 		((MobSprite)mob.getSprite()).fall();
 	}
 
@@ -124,4 +114,21 @@ public class Chasm {
 		}
 	}
 
+	@Override
+	public void onDeath() {
+		Badges.validateDeathFromFalling();
+
+		Dungeon.fail( Utils.format( ResultDescriptions.getDescription(ResultDescriptions.Reason.FALL), Dungeon.depth ) );
+		GLog.n(Game.getVar(R.string.Chasm_Info));
+	}
+
+	@Override
+	public String getEntityKind() {
+		return getClass().getSimpleName();
+	}
+
+	@Override
+	public String name() {
+		return getEntityKind();
+	}
 }

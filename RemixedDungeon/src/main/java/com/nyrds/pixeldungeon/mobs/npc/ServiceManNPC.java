@@ -3,14 +3,15 @@ package com.nyrds.pixeldungeon.mobs.npc;
 import com.nyrds.Packable;
 import com.nyrds.android.util.Util;
 import com.nyrds.pixeldungeon.ml.R;
+import com.nyrds.pixeldungeon.support.Ads;
+import com.nyrds.pixeldungeon.support.AdsUtils;
 import com.nyrds.pixeldungeon.support.EuConsent;
-import com.nyrds.pixeldungeon.support.RewardVideo;
 import com.nyrds.pixeldungeon.windows.WndEuConsent;
 import com.nyrds.pixeldungeon.windows.WndMovieTheatre;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.Dungeon;
 import com.watabou.pixeldungeon.RemixedDungeon;
-import com.watabou.pixeldungeon.actors.hero.Hero;
+import com.watabou.pixeldungeon.actors.Char;
 import com.watabou.pixeldungeon.items.Gold;
 import com.watabou.pixeldungeon.scenes.GameScene;
 import com.watabou.pixeldungeon.utils.Utils;
@@ -24,7 +25,7 @@ public class ServiceManNPC extends ImmortalNPC {
 
     public ServiceManNPC() {
         if (EuConsent.getConsentLevel() > EuConsent.UNKNOWN) {
-            RewardVideo.init();
+            AdsUtils.initRewardVideo();
         }
     }
 
@@ -33,18 +34,18 @@ public class ServiceManNPC extends ImmortalNPC {
     }
 
     public static void reward() {
-        filmsSeen++;
         Dungeon.hero.collect(new Gold(getReward()));
+        filmsSeen++;
     }
 
     @Override
-    public boolean interact(final Hero hero) {
+    public boolean interact(final Char hero) {
 
         if (EuConsent.getConsentLevel() < EuConsent.NON_PERSONALIZED) {
             Game.scene().add(new WndEuConsent() {
                 @Override
                 public void done() {
-                    RewardVideo.init();
+                    AdsUtils.initRewardVideo();
                 }
             });
             return true;
@@ -64,7 +65,7 @@ public class ServiceManNPC extends ImmortalNPC {
 
         Game.instance().runOnUiThread(() ->
         {
-            boolean result = RewardVideo.isReady();
+            boolean result = Ads.isRewardVideoReady();
             RemixedDungeon.pushUiTask(() -> {
                         if (result) {
                             GameScene.show(new WndMovieTheatre(this, filmsSeen, getLimit(), getReward()));

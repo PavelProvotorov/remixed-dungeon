@@ -17,8 +17,11 @@
  */
 package com.watabou.pixeldungeon.scenes;
 
+import com.nyrds.LuaInterface;
 import com.nyrds.android.util.ModdingMode;
 import com.nyrds.android.util.TrackedRuntimeException;
+import com.nyrds.pixeldungeon.effects.CustomClipEffect;
+import com.nyrds.pixeldungeon.effects.EffectsFactory;
 import com.nyrds.pixeldungeon.effects.ZapEffect;
 import com.nyrds.pixeldungeon.levels.objects.LevelObject;
 import com.nyrds.pixeldungeon.levels.objects.sprites.LevelObjectSprite;
@@ -63,11 +66,9 @@ import com.watabou.pixeldungeon.items.wands.WandOfBlink;
 import com.watabou.pixeldungeon.levels.Level;
 import com.watabou.pixeldungeon.levels.RegularLevel;
 import com.watabou.pixeldungeon.levels.features.Chasm;
-import com.watabou.pixeldungeon.plants.Plant;
 import com.watabou.pixeldungeon.sprites.CharSprite;
 import com.watabou.pixeldungeon.sprites.DiscardedItemSprite;
 import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.PlantSprite;
 import com.watabou.pixeldungeon.ui.AttackIndicator;
 import com.watabou.pixeldungeon.ui.Banner;
 import com.watabou.pixeldungeon.ui.BusyIndicator;
@@ -105,7 +106,8 @@ public class GameScene extends PixelScene {
     private static CellSelector cellSelector;
 
     private Group ripples;
-    private Group plants;
+    private Group bottomEffects;
+    private Group objects;
     private Group heaps;
     private Group mobs;
     private Group emitters;
@@ -115,7 +117,6 @@ public class GameScene extends PixelScene {
     private Group statuses;
     private Group emoicons;
 
-    private Group objects;
 
     //ui elements
     private Toolbar         toolbar;
@@ -128,6 +129,7 @@ public class GameScene extends PixelScene {
 
     private volatile boolean sceneCreated = false;
     private          float   waterSx      = 0, waterSy = -5;
+
 
     public void updateUiCamera() {
         statusPane.setSize(uiCamera.width, 0);
@@ -151,7 +153,7 @@ public class GameScene extends PixelScene {
 
         Level level = Dungeon.level;
 
-        RemixedDungeon.lastClass(Dungeon.hero.heroClass.ordinal());
+        RemixedDungeon.lastClass(Dungeon.hero.getHeroClass().classIndex());
 
         super.create();
 
@@ -195,6 +197,8 @@ public class GameScene extends PixelScene {
         }
         terrain.add(baseTiles);
 
+        bottomEffects = new Group();
+        add(bottomEffects);
 
         objects = new Group();
         add(objects);
@@ -207,14 +211,7 @@ public class GameScene extends PixelScene {
         }
 
         level.addVisuals(this);
-
-        plants = new Group();
-        add(plants);
-
-        for (int i = 0; i < level.plants.size(); i++) {
-            addPlantSprite(level.plants.valueAt(i));
-        }
-
+        
         heaps = new Group();
         add(heaps);
 
@@ -251,8 +248,6 @@ public class GameScene extends PixelScene {
                 mob.beckon(Dungeon.hero.getPos());
             }
         }
-
-        Dungeon.hero.updateSprite();
 
         add(emitters);
         add(effects);
@@ -292,8 +287,6 @@ public class GameScene extends PixelScene {
         add(new HealthIndicator());
 
         add(cellSelector = new CellSelector(baseTiles));
-
-        Dungeon.hero.updateLook();
 
         statusPane = new StatusPane(Dungeon.hero, level);
         statusPane.camera = uiCamera;
@@ -389,6 +382,7 @@ public class GameScene extends PixelScene {
         fadeIn();
 
         Dungeon.observe();
+        Dungeon.hero.readyAndIdle();
 
         doSelfTest();
     }
@@ -432,7 +426,11 @@ public class GameScene extends PixelScene {
             return;
         }
 
-        if (Dungeon.level == null) {
+        if (Dungeon.isLoading()) {
+            return;
+        }
+
+        if(!Dungeon.level.cellValid(Dungeon.hero.getPos())){
             return;
         }
 
@@ -514,10 +512,6 @@ public class GameScene extends PixelScene {
         heaps.add(heap.sprite);
     }
 
-    private void addPlantSprite(Plant plant) {
-        (plant.sprite = (PlantSprite) plants.recycle(PlantSprite.class)).reset(plant);
-    }
-
     private static void addBlobSprite(final Blob gas) {
         if (isSceneReady())
             if (gas.emitter == null) {
@@ -554,16 +548,8 @@ public class GameScene extends PixelScene {
 
     // -------------------------------------------------------
 
-    public static void add(Plant plant) {
-        if (scene != null && Dungeon.level != null) {
-            scene.addPlantSprite(plant);
-        } else {
-            EventCollector.logException();
-        }
-    }
-
     public static void add(Blob gas) {
-        if (scene != null && Dungeon.level != null) {
+        if (isSceneReady()) {
             Actor.add(gas);
             addBlobSprite(gas);
         } else {
@@ -596,7 +582,7 @@ public class GameScene extends PixelScene {
     }
 
     public static boolean isSceneReady() {
-        return scene != null && Dungeon.level != null;
+        return scene != null && !Dungeon.isLoading();
     }
 
     public static void add(EmoIcon icon) {
@@ -609,6 +595,26 @@ public class GameScene extends PixelScene {
 
     public static void zapEffect(int from, int to, String zapEffect) {
         ZapEffect.zap(scene.effects, from, to, zapEffect);
+    }
+
+    @LuaInterface
+    public static CustomClipEffect clipEffect(int cell, int layer, String effectName) {
+        CustomClipEffect effect = EffectsFactory.getEffectByName(effectName);
+        effect.place(cell);
+
+        switch (layer) {
+            case 0:
+                scene.bottomEffects.add(effect);
+            break;
+            case 1:
+                scene.effects.add(effect);
+            break;
+            default:
+                GLog.n("Bad layer %d for %s", layer, effectName);
+        }
+
+        effect.playAnimOnce();
+        return effect;
     }
 
     public static Ripple ripple(int pos) {
@@ -739,8 +745,7 @@ public class GameScene extends PixelScene {
     public static WndBag selectItem(WndBag.Listener listener, WndBag.Mode mode, String title) {
         cancelCellSelector();
 
-        WndBag wnd = mode == Mode.SEED ? WndBag.seedPouch(listener, mode, title)
-                : WndBag.lastBag(listener, mode, title);
+        WndBag wnd = WndBag.lastBag(listener, mode, title);
         scene.add(wnd);
 
         return wnd;

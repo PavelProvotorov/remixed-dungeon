@@ -35,7 +35,7 @@ public class WndTitledMessage extends Window {
 		
 		super();
 
-		resizeLimited(120);
+		resizeLimited(STD_WIDTH);
 
 		titlebar.setRect( 0, 0, width, 0 );
 		add( titlebar );
@@ -49,7 +49,7 @@ public class WndTitledMessage extends Window {
 		
 		normal.maxWidth(width);
 		normal.x = titlebar.left();
-		normal.y = titlebar.bottom() + GAP;
+		normal.y = titlebar.bottom() + 2*GAP;
 		add(normal);
 
 		if (hl.isHighlighted()) {

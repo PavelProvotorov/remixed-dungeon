@@ -17,6 +17,8 @@
  */
 package com.watabou.pixeldungeon.levels;
 
+import android.annotation.SuppressLint;
+
 import com.nyrds.Packable;
 import com.nyrds.android.lua.LuaEngine;
 import com.nyrds.android.util.ModdingMode;
@@ -28,6 +30,7 @@ import com.nyrds.pixeldungeon.levels.objects.Presser;
 import com.nyrds.pixeldungeon.mechanics.actors.ScriptedActor;
 import com.nyrds.pixeldungeon.ml.EventCollector;
 import com.nyrds.pixeldungeon.ml.R;
+import com.nyrds.pixeldungeon.utils.CharsList;
 import com.nyrds.pixeldungeon.utils.DungeonGenerator;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.Scene;
@@ -80,7 +83,9 @@ import com.watabou.pixeldungeon.levels.traps.ToxicTrap;
 import com.watabou.pixeldungeon.levels.traps.TrapHelper;
 import com.watabou.pixeldungeon.mechanics.ShadowCaster;
 import com.watabou.pixeldungeon.plants.Plant;
+import com.watabou.pixeldungeon.plants.Seed;
 import com.watabou.pixeldungeon.scenes.GameScene;
+import com.watabou.pixeldungeon.scenes.InterlevelScene;
 import com.watabou.pixeldungeon.utils.GLog;
 import com.watabou.pixeldungeon.utils.Utils;
 import com.watabou.utils.Bundlable;
@@ -88,17 +93,19 @@ import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 import com.watabou.utils.SparseArray;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 public abstract class Level implements Bundlable {
 
@@ -209,7 +216,7 @@ public abstract class Level implements Bundlable {
 	public void onHeroDescend(int cell) {
 	}
 
-	@NonNull
+	@NotNull
 	public String music() {
 		return DungeonGenerator.getLevelProperty(levelId, "music", Assets.TUNE);
 	}
@@ -287,6 +294,25 @@ public abstract class Level implements Bundlable {
 		return customLayers.get(id);
 	}
 
+	public static Collection<Mob> mobsFollowLevelChange(InterlevelScene.Mode changeMode) {
+
+		if(Dungeon.level==null) { //first level
+			return CharsList.emptyMobList;
+		}
+
+		ArrayList<Mob> mobsToNextLevel = new ArrayList<>();
+
+		Iterator<Mob> it = Dungeon.level.mobs.iterator();
+		while(it.hasNext()) {
+			Mob mob = it.next();
+			if(mob.followOnLevelChanged(changeMode)) {
+				mobsToNextLevel.add(mob);
+				it.remove();
+			}
+		}
+		return mobsToNextLevel;
+	}
+
 	public enum Feeling {
 		NONE, CHASM, WATER, GRASS, UNDEFINED
 	}
@@ -342,6 +368,7 @@ public abstract class Level implements Bundlable {
 
 	private int compassTarget = INVALID_CELL;	// Where compass should point
 
+	@SuppressLint("UseSparseArrays")
 	private HashMap<Integer, Integer> exitMap = new HashMap<>();
 
 	public String levelId;
@@ -349,7 +376,6 @@ public abstract class Level implements Bundlable {
 	private Set<ScriptedActor>                    scripts = new HashSet<>();
 	public  Set<Mob>                              mobs    = new HashSet<>();
 	public  Map<Class<? extends Blob>, Blob>      blobs   = new HashMap<>();
-	public  SparseArray<Plant>                    plants  = new SparseArray<>();
 	private SparseArray<Heap>                     heaps   = new SparseArray<>();
 	public  SparseArray<SparseArray<LevelObject>> objects = new SparseArray<>();
 
@@ -369,6 +395,8 @@ public abstract class Level implements Bundlable {
 	private static final String COMPASS_TARGET = "compassTarget";
 	private static final String EXIT           = "exit";
 	private static final String HEAPS          = "heaps";
+
+	@Deprecated
 	private static final String PLANTS         = "plants";
 	private static final String MOBS           = "mobs";
 	private static final String BLOBS          = "blobs";
@@ -562,8 +590,6 @@ public abstract class Level implements Bundlable {
 		mobs = new HashSet<>();
 		heaps = new SparseArray<>();
 		blobs = new HashMap<>();
-		plants = new SparseArray<>();
-
 
 		width = bundle.optInt(WIDTH, 32); // old levels compat
 		height = bundle.optInt(HEIGHT, 32);
@@ -604,8 +630,10 @@ public abstract class Level implements Bundlable {
 			heaps.put(heap.pos, heap);
 		}
 
+
+		///Pre 28.6 saves compatibility
 		for (Plant plant : bundle.getCollection(PLANTS, Plant.class)) {
-			plants.put(plant.pos, plant);
+			putLevelObject(plant);
 		}
 
 		for (LevelObject object : bundle.getCollection(OBJECTS, LevelObject.class)) {
@@ -630,18 +658,6 @@ public abstract class Level implements Bundlable {
 		cleanWalls();
 	}
 
-	public void removePets() {
-		HashSet<Mob> nonPets = new HashSet<>();
-
-		for (Mob mob : mobs) {
-			if (!mob.isPet()) {
-				nonPets.add(mob);
-			}
-		}
-
-		mobs = nonPets;
-	}
-
 	@Override
 	public void storeInBundle(Bundle bundle) {
 		bundle.put(MAP, map);
@@ -664,7 +680,6 @@ public abstract class Level implements Bundlable {
 		bundle.put(EXIT, exits);
 
 		bundle.put(HEAPS, heaps.values());
-		bundle.put(PLANTS, plants.values());
 
 		ArrayList<LevelObject> objectsArray = new ArrayList<>();
 
@@ -720,7 +735,7 @@ public abstract class Level implements Bundlable {
 		return null;
 	}
 
-	@NonNull
+	@NotNull
 	public String getWaterTex() {
 		String water = DungeonGenerator.getLevelProperty(levelId, "water", null);
 		if (water != null) {
@@ -768,7 +783,7 @@ public abstract class Level implements Bundlable {
 	public void spawnMob(Mob mob, float delay, int fromCell) {
 
 		if (!cellValid(mob.getPos())) {
-			EventCollector.logException(String.format(Locale.ROOT, "trying to spawn: %s on invalid cell: %d", mob.getMobClassName(), mob.getPos()));
+			EventCollector.logException(String.format(Locale.ROOT, "trying to spawn: %s on invalid cell: %d", mob.getEntityKind(), mob.getPos()));
 			return;
 		}
 
@@ -1017,7 +1032,7 @@ public abstract class Level implements Bundlable {
 				|| terrain >= Terrain.WATER_TILES;
 	}
 
-	@NonNull
+	@NotNull
 	public Heap drop(Item item, int cell) {
 
 		if (solid[cell] && map[cell] != Terrain.DOOR){
@@ -1042,7 +1057,7 @@ public abstract class Level implements Bundlable {
 			item = new Gold(item.price());
 		}
 
-		if (((map[cell] == Terrain.ALCHEMY) && !(item instanceof Plant.Seed))
+		if (((map[cell] == Terrain.ALCHEMY) && !(item instanceof Seed))
 				|| (Actor.findChar(cell) instanceof NPC)) {
 			int newCell = getEmptyCellNextTo(cell);
 			if (cellValid(newCell)) {
@@ -1078,7 +1093,7 @@ public abstract class Level implements Bundlable {
 		}
 		heap.drop(item);
 
-		if (Dungeon.level != null) {
+		if (!Dungeon.isLoading()) {
 			press(cell, item);
 		}
 
@@ -1099,15 +1114,17 @@ public abstract class Level implements Bundlable {
 		}
 	}
 
-	public void plant(Plant.Seed seed, int pos) {
+	public void plant(Seed seed, int pos) {
 
-		Plant plant = plants.get(pos);
-		if (plant != null) {
-			plant.wither();
+	    LevelObject lo = getTopLevelObject(pos);
+
+		if (lo != null) {
+			lo.bump(seed);
 		}
 
-		plant = seed.couch(pos);
-		plants.put(pos, plant);
+		Plant plant = seed.couch(pos);
+		putLevelObject(plant);
+
 		if (GameScene.isSceneReady()) {
 			GameScene.add(plant);
 		}
@@ -1128,10 +1145,6 @@ public abstract class Level implements Bundlable {
 			return true;
 		}
 		return false;
-	}
-
-	public void uproot(int pos) {
-		plants.delete(pos);
 	}
 
 	public int pitCell() {
@@ -1247,11 +1260,6 @@ public abstract class Level implements Bundlable {
 			set(cell, Terrain.INACTIVE_TRAP);
 			GameScene.updateMap(cell);
 		}
-
-		Plant plant = plants.get(cell);
-		if (plant != null) {
-			plant.activate(chr);
-		}
 	}
 
 	private void markFovCellSafe(int p) {
@@ -1313,8 +1321,8 @@ public abstract class Level implements Bundlable {
 
 
 		if(c instanceof Hero) {
-			for (Mob mob: ((Hero) c).getPets()) {
-				updateFovForObjectAt(mob.getPos());
+			for (Integer mobId: c.getPets()) {
+				updateFovForObjectAt(CharsList.getById(mobId).getPos());
 			}
 		}
 
@@ -1323,8 +1331,7 @@ public abstract class Level implements Bundlable {
 				for (Mob mob : mobs) {
 					updateFovForObjectAt(mob.getPos());
 				}
-			} else if (c == Dungeon.hero
-					&& ((Hero) c).heroClass == HeroClass.HUNTRESS) {
+			} else if (c.getHeroClass() == HeroClass.HUNTRESS) {
 				for (Mob mob : mobs) {
 					int p = mob.getPos();
 					if (distance(c.getPos(), p) == 2) {
@@ -1498,7 +1505,7 @@ public abstract class Level implements Bundlable {
 				if ((TerrainFlags.flags[tile] & TerrainFlags.PIT) != 0) {
 					return tileDesc(Terrain.CHASM);
 				}
-				return "";
+				return Utils.EMPTY_STRING;
 		}
 	}
 
@@ -1732,7 +1739,7 @@ public abstract class Level implements Bundlable {
 
 	public void addScriptedActor(ScriptedActor actor) {
 		scripts.add(actor);
-		if(Dungeon.level!=null) {
+		if(!Dungeon.isLoading()) {
 			Actor.add(actor);
 		}
 	}

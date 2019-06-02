@@ -83,7 +83,7 @@ public class ChaosStaff extends Wand implements IChaosItem {
                         mob.die(getUser());
                         break;
                     case 1:
-                        Mob.makePet(mob, getUser());
+                        Mob.makePet(mob, getUser().getId());
                         break;
 
                     case 2:
@@ -91,7 +91,7 @@ public class ChaosStaff extends Wand implements IChaosItem {
 
                         if (Dungeon.level.cellValid(nextCell)) {
                             try {
-                                Mob newMob = MobFactory.mobByName(mob.getMobClassName());
+                                Mob newMob = MobFactory.mobByName(mob.getEntityKind());
                                 Dungeon.level.spawnMob(newMob);
                             } catch (Exception e) {
                                 throw new TrackedRuntimeException(e);

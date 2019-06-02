@@ -19,6 +19,7 @@ package com.watabou.pixeldungeon.items.armor;
 
 import com.nyrds.android.util.TrackedRuntimeException;
 import com.nyrds.android.util.Util;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.Badges;
@@ -44,12 +45,11 @@ import com.watabou.utils.Bundlable;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-
-import androidx.annotation.NonNull;
 
 public class Armor extends EquipableItem {
 
@@ -114,7 +114,7 @@ public class Armor extends EquipableItem {
 				GLog.n( Game.getVar(R.string.Armor_EquipCursed), toString() );
 			}
 			
-			hero.updateLook();
+			hero.updateSprite();
 			
 			hero.spendAndNext( 2 * time2equip( hero ) );
 			return true;
@@ -128,16 +128,16 @@ public class Armor extends EquipableItem {
 	}
 	
 	@Override
-	protected float time2equip( Hero hero ) {
+	protected float time2equip(Char hero ) {
 		return hero.speed();
 	}
 	
 	@Override
-	public boolean doUnequip( Hero hero, boolean collect, boolean single ) {
+	public boolean doUnequip(Char hero, boolean collect, boolean single ) {
 		if (super.doUnequip( hero, collect, single )) {
 			
-			hero.belongings.armor = null;
-			hero.updateLook();
+			hero.getBelongings().armor = null;
+			hero.updateSprite();
 			return true;
 		} else {
 			return false;
@@ -202,7 +202,7 @@ public class Armor extends EquipableItem {
 		return damage;
 	}
 	
-	@NonNull
+	@NotNull
     @Override
 	public String toString() {
 		return levelKnown ? Utils.format( Game.getVar(R.string.Armor_ToString), super.toString(), STR ) : super.toString();
@@ -246,7 +246,7 @@ public class Armor extends EquipableItem {
 		
 		if (isEquipped( Dungeon.hero )) {
 			info.append(Utils.format(Game.getVar(R.string.Armor_Info7a), name,
-				(cursed ? Game.getVar(R.string.Armor_Info7b) : "") )); 
+				(cursed ? Game.getVar(R.string.Armor_Info7b) : Utils.EMPTY_STRING) ));
 		} else {
 			if (cursedKnown && cursed) {
 				info.append(Utils.format(Game.getVar(R.string.Armor_Info8), name));
@@ -355,7 +355,7 @@ public class Armor extends EquipableItem {
 	}
 
 
-	public static abstract class Glyph implements Bundlable {
+	public static abstract class Glyph implements Bundlable, NamedEntityKind {
 		
 		private static final Class<?>[] glyphs = new Class<?>[]{ 
 			Bounce.class, Affection.class, AntiEntropy.class, Multiplicity.class, 
@@ -372,6 +372,11 @@ public class Armor extends EquipableItem {
 		
 		public String name( String armorName ) {
 			return armorName;
+		}
+
+		@Override
+		public String getEntityKind() {
+			return getClass().getSimpleName();
 		}
 
 		@Override

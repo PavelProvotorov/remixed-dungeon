@@ -37,7 +37,9 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.PermissionChecker;
+
 import com.nyrds.android.util.ModdingMode;
 import com.nyrds.android.util.TrackedRuntimeException;
 import com.nyrds.android.util.Util;
@@ -59,9 +61,10 @@ import com.watabou.pixeldungeon.RemixedDungeon;
 import com.watabou.pixeldungeon.ui.Window;
 import com.watabou.pixeldungeon.utils.GLog;
 import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.pixeldungeon.windows.WndMessage;
+import com.watabou.utils.Random;
 import com.watabou.utils.SystemTime;
 
+import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.LuaError;
 
 import java.util.ArrayList;
@@ -73,13 +76,10 @@ import java.util.concurrent.Executors;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.PermissionChecker;
-import io.fabric.sdk.android.Fabric;
-
+@SuppressLint("Registered")
 public class Game extends Activity implements GLSurfaceView.Renderer, View.OnTouchListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
+    @SuppressLint("StaticFieldLeak")
     private static Game instance;
 
     // Actual size of the screen
@@ -176,7 +176,8 @@ public class Game extends Activity implements GLSurfaceView.Renderer, View.OnTou
                 .getLaunchIntentForPackage(getBaseContext().getPackageName())
                 .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        int piId = 123456;
+        int piId = Random.Int(Integer.MAX_VALUE);
+
         PendingIntent pi = PendingIntent.getActivity(getBaseContext(), piId, i, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager mgr = (AlarmManager) getBaseContext().getSystemService(ContextWrapper.ALARM_SERVICE);
         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, pi);
@@ -194,21 +195,18 @@ public class Game extends Activity implements GLSurfaceView.Renderer, View.OnTou
     }
 
     public static void toast(final String text, final Object... args) {
-        instance().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                String toastText = text;
+        instance().runOnUiThread(() -> {
+            String toastText = text;
 
-                if (args.length > 0) {
-                    toastText = Utils.format(text, args);
-                }
-
-                GLog.toFile("%s ",toastText);
-
-                android.widget.Toast toast = android.widget.Toast.makeText(RemixedDungeonApp.getContext(), toastText,
-                        Toast.LENGTH_SHORT);
-                toast.show();
+            if (args.length > 0) {
+                toastText = Utils.format(text, args);
             }
+
+            GLog.toFile("%s ",toastText);
+
+            Toast toast = Toast.makeText(RemixedDungeonApp.getContext(), toastText,
+                    Toast.LENGTH_SHORT);
+            toast.show();
         });
 
     }
@@ -221,9 +219,6 @@ public class Game extends Activity implements GLSurfaceView.Renderer, View.OnTou
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Fabric.with(this, new Crashlytics());
-        EventCollector.init();
 
         iap = new Iap(this);
 
@@ -546,7 +541,7 @@ public class Game extends Activity implements GLSurfaceView.Renderer, View.OnTou
 
     private InterstitialPoint permissionsPoint;
 
-    public void doPermissionsRequest(@NonNull InterstitialPoint returnTo, String[] permissions) {
+    public void doPermissionsRequest(@NotNull InterstitialPoint returnTo, String[] permissions) {
         boolean havePermissions = true;
         for (String permission : permissions) {
             int checkResult = ActivityCompat.checkSelfPermission(this, permission);
@@ -564,7 +559,7 @@ public class Game extends Activity implements GLSurfaceView.Renderer, View.OnTou
         }
     }
 
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, @NotNull int[] grantResults) {
         boolean res = true;
 
         if (permissions.length == 0) {
@@ -611,14 +606,6 @@ public class Game extends Activity implements GLSurfaceView.Renderer, View.OnTou
 
     static public void pushUiTask(Runnable task) {
         instance().uiTasks.add(task);
-    }
-
-    public static void showWindow(final String msg) {
-        hideWindow();
-        pushUiTask(() -> {
-            currentWindow = new WndMessage(msg);
-            Game.scene().add(currentWindow);
-        });
     }
 
     public static void hideWindow() {

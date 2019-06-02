@@ -19,8 +19,11 @@ package com.watabou.utils;
 
 import com.nyrds.android.util.TrackedRuntimeException;
 import com.nyrds.generated.BundleHelper;
+import com.nyrds.pixeldungeon.ml.BuildConfig;
 import com.nyrds.pixeldungeon.ml.EventCollector;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,7 +31,6 @@ import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -37,13 +39,11 @@ import java.io.PushbackInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 public class Bundle {
 
@@ -156,7 +156,7 @@ public class Bundle {
         }
     }
 
-    @NonNull
+    @NotNull
     public int[] getIntArray(String key) {
         try {
             JSONArray array = data.getJSONArray(key);
@@ -172,7 +172,7 @@ public class Bundle {
         }
     }
 
-    @NonNull
+    @NotNull
     public boolean[] getBooleanArray(String key) {
         try {
             JSONArray array = data.getJSONArray(key);
@@ -187,7 +187,7 @@ public class Bundle {
         }
     }
 
-    @NonNull
+    @NotNull
     public String[] getStringArray(String key) {
         try {
             JSONArray array = data.getJSONArray(key);
@@ -202,7 +202,7 @@ public class Bundle {
         }
     }
 
-    @NonNull
+    @NotNull
     public <T extends Bundlable> Collection<T> getCollection(String key, Class<T> type) {
         List<T> list = new ArrayList<>();
 
@@ -239,6 +239,10 @@ public class Bundle {
 
     public void put(String key, float value) {
         try {
+            if(Float.isInfinite(value)) {
+                value = Float.MAX_VALUE;
+                EventCollector.logException(key+" is infinity");
+            }
             data.put(key, value);
         } catch (JSONException e) {
             throw new TrackedRuntimeException("key:" + key, e);
@@ -282,6 +286,18 @@ public class Bundle {
             } catch (JSONException e) {
                 throw new TrackedRuntimeException("key:" + key, e);
             }
+        }
+    }
+
+    public void put(String key, Integer[] array) {
+        try {
+            JSONArray jsonArray = new JSONArray();
+            for (int i = 0; i < array.length; i++) {
+                jsonArray.put(i, array[i]);
+            }
+            data.put(key, jsonArray);
+        } catch (JSONException e) {
+            throw new TrackedRuntimeException("key:" + key, e);
         }
     }
 
@@ -339,6 +355,41 @@ public class Bundle {
         }
     }
 
+    public <T> void put(String key, Map<String, T> map) {
+        try {
+            JSONObject object = new JSONObject();
+            for (Map.Entry<String,T> entry: map.entrySet()) {
+                object.put(entry.getKey(),entry.getValue());
+            }
+            data.put(key,object);
+        } catch (JSONException e) {
+            throw new TrackedRuntimeException("key:" + key, e);
+        }
+    }
+
+    public <T> Map<String,T> getMap(String key) {
+        Map<String,T> ret = new HashMap<>();
+
+        if(data.isNull(key)) {
+            return ret;
+        }
+
+        try {
+
+            JSONObject object = data.getJSONObject(key);
+
+            Iterator<String> oi = object.keys();
+            while(oi.hasNext()) {
+                String name = oi.next();
+                //noinspection unchecked
+                ret.put(name, (T)object.get(name));
+            }
+
+            return ret;
+        } catch (JSONException e) {
+            throw new TrackedRuntimeException("key:" + key, e);
+        }
+    }
 
     private static final int GZIP_BUFFER_SIZE = 4096;
 
@@ -352,13 +403,23 @@ public class Bundle {
             byte[] header = new byte[2];
             pb.unread(header, 0, pb.read(header));
 
-            if (header[0] == (byte) 0x1f && header[1] == (byte) 0x8b)
+            if (header[0] == (byte) 0x1f && header[1] == (byte) 0x8b) {
                 reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(pb, GZIP_BUFFER_SIZE)));
-            else
+            } else {
                 reader = new BufferedReader(new InputStreamReader(pb));
+            }
 
-            JSONObject json = (JSONObject) new JSONTokener(reader.readLine()).nextValue();
+            StringBuilder jsonDef = new StringBuilder();
+
+            String line = reader.readLine();
+
+            while (line != null) {
+                jsonDef.append(line);
+                line = reader.readLine();
+            }
             reader.close();
+
+            JSONObject json = (JSONObject) new JSONTokener(jsonDef.toString()).nextValue();
 
             return new Bundle(json);
         } catch (Exception e) {
@@ -369,12 +430,19 @@ public class Bundle {
 
     public static void write(Bundle bundle, OutputStream stream) {
         try {
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(stream, GZIP_BUFFER_SIZE)));
 
+            if(BuildConfig.DEBUG) { //cleartext for debugging
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream));
+                writer.write(bundle.data.toString(2));
+                writer.close();
+                return;
+            }
+
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(stream, GZIP_BUFFER_SIZE)));
             writer.write(bundle.data.toString());
             writer.close();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new TrackedRuntimeException("bundle write failed: %s\n", e);
         }
     }

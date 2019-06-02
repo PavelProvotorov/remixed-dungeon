@@ -5,7 +5,7 @@ import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.utils.Utils;
 import com.watabou.pixeldungeon.windows.WndMessage;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by mike on 14.04.2018.
@@ -16,7 +16,7 @@ public class DownloadProgressWindow implements DownloadStateListener {
     private String            prefix;
     private IDownloadComplete onComplete;
 
-    public DownloadProgressWindow(@NonNull String prefix, @NonNull IDownloadComplete onComplete) {
+    public DownloadProgressWindow(@NotNull String prefix, @NotNull IDownloadComplete onComplete) {
         this.prefix = prefix;
         this.onComplete = onComplete;
     }
@@ -28,7 +28,7 @@ public class DownloadProgressWindow implements DownloadStateListener {
             @Override
             public void run() {
                 if (progress == null) {
-                    progress = new WndMessage("");
+                    progress = new WndMessage(Utils.EMPTY_STRING);
                     Game.scene().add(progress);
                 }
                 if (progress.getParent() == Game.scene()) {
@@ -40,17 +40,13 @@ public class DownloadProgressWindow implements DownloadStateListener {
 
     @Override
     public void DownloadComplete(final String file, final Boolean result) {
-        Game.pushUiTask(new Runnable() {
-
-            @Override
-            public void run() {
-                if (progress != null) {
-                    progress.hide();
-                    progress = null;
-                }
-
-                onComplete.DownloadComplete(file, result);
+        Game.pushUiTask(() -> {
+            if (progress != null) {
+                progress.hide();
+                progress = null;
             }
+
+            onComplete.DownloadComplete(file, result);
         });
     }
 }

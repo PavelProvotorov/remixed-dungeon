@@ -17,6 +17,7 @@
  */
 package com.watabou.pixeldungeon.plants;
 
+import com.nyrds.pixeldungeon.levels.objects.Presser;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.CommonActions;
@@ -35,13 +36,13 @@ import com.watabou.pixeldungeon.utils.Utils;
 public class Sorrowmoss extends Plant {
 
 	public Sorrowmoss() {
-		image = 2;
-		plantName = Game.getVar(R.string.Sorrowmoss_Name);
+		imageIndex = 2;
 	}
 	
-	public void effect(int pos, Char ch ) {
-		if (ch != null) {
-			Buff.affect( ch, Poison.class ).set( Poison.durationFactor( ch ) * (4 + Dungeon.depth / 2) );
+	public void effect(int pos, Presser ch ) {
+		if (ch instanceof Char) {
+			Char chr = (Char)ch;
+			Buff.affect( chr, Poison.class ).set( Poison.durationFactor( chr ) * (4 + Dungeon.depth / 2) );
 		}
 		
 		if (Dungeon.visible[pos]) {
@@ -49,12 +50,7 @@ public class Sorrowmoss extends Plant {
 		}
 	}
 	
-	@Override
-	public String desc() {
-		return Game.getVar(R.string.Sorrowmoss_Desc);
-	}
-	
-	public static class Seed extends Plant.Seed {
+	public static class Seed extends com.watabou.pixeldungeon.plants.Seed {
 		{
 			plantName = Game.getVar(R.string.Sorrowmoss_Name);
 			

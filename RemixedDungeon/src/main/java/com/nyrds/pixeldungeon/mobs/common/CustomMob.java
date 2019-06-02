@@ -1,6 +1,9 @@
 package com.nyrds.pixeldungeon.mobs.common;
 
+import androidx.annotation.Keep;
+
 import com.nyrds.Packable;
+import com.nyrds.android.util.JsonHelper;
 import com.nyrds.android.util.TrackedRuntimeException;
 import com.nyrds.pixeldungeon.items.common.ItemFactory;
 import com.nyrds.pixeldungeon.ml.R;
@@ -43,6 +46,7 @@ public class CustomMob extends MultiKindMob implements IZapper {
 	private boolean friendly;
 
 	//For restoreFromBundle
+	@Keep
 	public CustomMob() {
 	}
 
@@ -79,12 +83,7 @@ public class CustomMob extends MultiKindMob implements IZapper {
 	}
 
 	@Override
-	protected void readCharData() {
-		super.readCharData();
-	}
-
-	@Override
-	public String getMobClassName() {
+	public String getEntityKind() {
 		return mobClass;
 	}
 
@@ -103,12 +102,9 @@ public class CustomMob extends MultiKindMob implements IZapper {
 		int enemyPos = enemy.getPos();
 		int distance = level().distance(getPos(), enemyPos);
 
-		if(distance <= attackRange && Ballistica.cast(getPos(), enemyPos, false, true) == enemyPos) {
-			return true;
-		}
+        return distance <= attackRange && Ballistica.cast(getPos(), enemyPos, false, true) == enemyPos;
 
-		return false;
-	}
+    }
 
 	@Override
 	public boolean friendly(Char chr) {
@@ -169,6 +165,9 @@ public class CustomMob extends MultiKindMob implements IZapper {
 			scriptFile = classDesc.optString("scriptFile", scriptFile);
 
 			friendly = classDesc.optBoolean("friendly",friendly);
+
+			JsonHelper.readStringSet(classDesc, Char.IMMUNITIES, immunities);
+			JsonHelper.readStringSet(classDesc, Char.RESISTANCES, resistances);
 
 			if(!restoring) {
 				setFraction(Enum.valueOf(Fraction.class, classDesc.optString("fraction","DUNGEON")));

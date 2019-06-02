@@ -17,6 +17,8 @@
  */
 package com.watabou.pixeldungeon.ui;
 
+import android.annotation.SuppressLint;
+
 import com.nyrds.pixeldungeon.items.common.ItemFactory;
 import com.nyrds.pixeldungeon.mechanics.spells.Spell;
 import com.nyrds.pixeldungeon.mechanics.spells.SpellFactory;
@@ -34,13 +36,15 @@ import com.watabou.pixeldungeon.items.wands.Wand;
 import com.watabou.pixeldungeon.items.weapon.Weapon;
 import com.watabou.pixeldungeon.scenes.GameScene;
 import com.watabou.pixeldungeon.scenes.PixelScene;
+import com.watabou.pixeldungeon.utils.Utils;
 import com.watabou.pixeldungeon.windows.WndBag;
 import com.watabou.utils.Bundle;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import androidx.annotation.Nullable;
+import java.util.Map;
 
 import static com.watabou.pixeldungeon.scenes.PixelScene.uiCamera;
 
@@ -48,8 +52,11 @@ public class QuickSlot extends Button implements WndBag.Listener, WndHeroSpells.
 
     private static final String QUICKSLOT       = "quickslot";
 
+    private static float lastRefreshTime;
+
     private static ArrayList<QuickSlot>     slots   = new ArrayList<>();
-    private static HashMap<Integer, Item> qsStorage = new HashMap<>();
+    @SuppressLint("UseSparseArrays")
+    private static Map<Integer, Item> qsStorage = new HashMap<>();
 
     private Item quickslotItem;
 
@@ -248,8 +255,10 @@ public class QuickSlot extends Button implements WndBag.Listener, WndHeroSpells.
 
     public static void refresh() {
         Game.pushUiTask(() -> {
-            for (QuickSlot slot : slots) {
-                slot.refreshSelf();
+            if(Dungeon.hero != null) {
+                for (QuickSlot slot : slots) {
+                    slot.refreshSelf();
+                }
             }
         });
     }
@@ -314,7 +323,7 @@ public class QuickSlot extends Button implements WndBag.Listener, WndHeroSpells.
             if(item != null) {
                 classes.add(item.getClassName());
             } else {
-                classes.add("");
+                classes.add(Utils.EMPTY_STRING);
             }
         }
 
@@ -380,5 +389,9 @@ public class QuickSlot extends Button implements WndBag.Listener, WndHeroSpells.
         prompt.setPos((uiCamera.width - prompt.width()) / 2, uiCamera.height - 60);
 
         Game.scene().add(prompt);
+    }
+
+    public Item getQuickslotItem() {
+        return quickslotItem;
     }
 }

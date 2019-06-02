@@ -12,7 +12,7 @@ import com.watabou.pixeldungeon.items.potions.PotionOfLevitation;
 import com.watabou.pixeldungeon.mechanics.Ballistica;
 import com.watabou.utils.Random;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class AirElemental extends Mob implements IDepthAdjustable {
 
@@ -28,11 +28,11 @@ public class AirElemental extends Mob implements IDepthAdjustable {
 		loot = new PotionOfLevitation();
 		lootChance = 0.1f;
 
-		IMMUNITIES.add(Bleeding.class);
+		addImmunity(Bleeding.class);
 	}
 
 	@Override
-	public int magicLvl() {
+	public int skillLevel() {
 		return Math.max(Math.min(7, exp / 2),3);
 	}
 
@@ -60,7 +60,7 @@ public class AirElemental extends Mob implements IDepthAdjustable {
 
 	@Override
 	public boolean getCloser(int target) {
-		if (getState() instanceof Hunting && Dungeon.level.distance(getPos(), target) < magicLvl() - 1) {
+		if (getState() instanceof Hunting && Dungeon.level.distance(getPos(), target) < skillLevel() - 1) {
 			return getFurther(target);
 		}
 
@@ -76,7 +76,7 @@ public class AirElemental extends Mob implements IDepthAdjustable {
 
 		Ballistica.cast(getPos(), enemy.getPos(), true, false);
 
-		for (int i = 1; i < magicLvl(); i++) {
+		for (int i = 1; i < skillLevel(); i++) {
 			if (Ballistica.trace[i] == enemy.getPos()) {
 				return true;
 			}
@@ -85,7 +85,7 @@ public class AirElemental extends Mob implements IDepthAdjustable {
 	}
 
 	@Override
-	public boolean zap(@NonNull Char enemy) {
+	public boolean zap(@NotNull Char enemy) {
 		windGust.cast(this, enemy.getPos());
 		super.zap(enemy);
 		return true;

@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.json.JSONException;
+
 import java.util.List;
 
 /**
@@ -55,10 +57,13 @@ public class Animation {
 
 	}
 
-	public void frames(TextureFilm film, List<Integer> frames, int shift) {
+	public void frames(TextureFilm film, List<Integer> frames, int shift) throws JSONException {
 		this.frames = new RectF[frames.size()];
 		for (int i = 0; i < frames.size(); i++) {
 			this.frames[i] = film.get(frames.get(i) + shift);
+			if(this.frames[i]==null) {
+				throw new JSONException("no frame "+ (i + shift) +" in film");
+			}
 		}
 	}
 

@@ -34,21 +34,19 @@ import com.watabou.pixeldungeon.actors.mobs.Mob;
 import com.watabou.pixeldungeon.items.Heap;
 import com.watabou.pixeldungeon.items.Item;
 import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.plants.Plant;
 import com.watabou.pixeldungeon.scenes.CellSelector;
 import com.watabou.pixeldungeon.scenes.GameScene;
 import com.watabou.pixeldungeon.windows.WndHero;
 import com.watabou.pixeldungeon.windows.WndInfoCell;
 import com.watabou.pixeldungeon.windows.WndInfoItem;
 import com.watabou.pixeldungeon.windows.WndInfoMob;
-import com.watabou.pixeldungeon.windows.WndInfoPlant;
 import com.watabou.pixeldungeon.windows.WndMessage;
 import com.watabou.pixeldungeon.windows.WndTradeItem;
 import com.watabou.pixeldungeon.windows.elements.Tool;
 
-import java.util.ArrayList;
+import org.jetbrains.annotations.Nullable;
 
-import androidx.annotation.Nullable;
+import java.util.ArrayList;
 
 public class Toolbar extends Component {
 
@@ -276,12 +274,6 @@ public class Toolbar extends Component {
                 return;
             }
 
-            Plant plant = Dungeon.level.plants.get(cell);
-            if (plant != null) {
-                GameScene.show(new WndInfoPlant(plant));
-                return;
-            }
-
             GameScene.show(new WndInfoCell(cell));
         }
 
@@ -293,35 +285,6 @@ public class Toolbar extends Component {
 
     public void pickup(Item item) {
         btnInventory.pickUp(item);
-    }
-
-    private static class QuickslotTool extends Tool {
-
-        private QuickSlot slot;
-
-        QuickslotTool() {
-            super(-1, Chrome.Type.QUICKSLOT);
-
-            slot = new QuickSlot();
-            add(slot);
-        }
-
-        @Override
-        protected void layout() {
-            super.layout();
-            slot.setRect(base.x, base.y, base.width(), base.height());
-        }
-
-        public void show(boolean value) {
-            setVisible(value);
-            enable(value);
-        }
-
-        @Override
-        public void enable(boolean value) {
-            slot.enable(value);
-            active = value;
-        }
     }
 
     @Override

@@ -19,6 +19,7 @@ package com.watabou.pixeldungeon.actors.mobs;
 
 import com.nyrds.pixeldungeon.ai.MobAi;
 import com.nyrds.pixeldungeon.ai.ThiefFleeing;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.Dungeon;
@@ -32,7 +33,7 @@ import com.watabou.pixeldungeon.utils.Utils;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class Thief extends Mob {
 
@@ -74,7 +75,7 @@ public class Thief extends Mob {
 	}
 	
 	@Override
-	public void die( Object cause ) {
+	public void die(NamedEntityKind cause) {
 
 		super.die( cause );
 		
@@ -94,7 +95,7 @@ public class Thief extends Mob {
 	}
 	
 	@Override
-	public int attackProc(@NonNull Char enemy, int damage ) {
+	public int attackProc(@NotNull Char enemy, int damage ) {
 		if (item == null && enemy instanceof Hero && steal( (Hero)enemy )) {
 			setState(MobAi.getStateByClass(ThiefFleeing.class));
 		}

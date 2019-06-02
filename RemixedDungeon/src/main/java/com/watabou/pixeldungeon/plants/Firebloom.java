@@ -17,11 +17,11 @@
  */
 package com.watabou.pixeldungeon.plants;
 
+import com.nyrds.pixeldungeon.levels.objects.Presser;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.CommonActions;
 import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
 import com.watabou.pixeldungeon.actors.blobs.Blob;
 import com.watabou.pixeldungeon.actors.blobs.Fire;
 import com.watabou.pixeldungeon.actors.buffs.Buff;
@@ -38,11 +38,10 @@ import com.watabou.pixeldungeon.utils.Utils;
 public class Firebloom extends Plant {
 
 	public Firebloom() {
-		image = 0;
-		plantName = Game.getVar(R.string.Firebloom_Name);
+		imageIndex = 0;
 	}
 
-	public void effect(int pos, Char ch) {
+	public void effect(int pos, Presser ch) {
 		GameScene.add(Blob.seed(pos, 2, Fire.class));
 
 		if (Dungeon.visible[pos]) {
@@ -55,7 +54,7 @@ public class Firebloom extends Plant {
 		return Game.getVar(R.string.Firebloom_Desc);
 	}
 
-	public static class Seed extends Plant.Seed {
+	public static class Seed extends com.watabou.pixeldungeon.plants.Seed {
 		{
 			plantName = Game.getVar(R.string.Firebloom_Name);
 

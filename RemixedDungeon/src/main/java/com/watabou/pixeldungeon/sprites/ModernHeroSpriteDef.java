@@ -1,23 +1,20 @@
 package com.watabou.pixeldungeon.sprites;
 
+import com.nyrds.android.util.Util;
 import com.nyrds.pixeldungeon.effects.CustomClipEffect;
 import com.nyrds.pixeldungeon.items.accessories.Accessory;
 import com.watabou.gltextures.TextureCache;
 import com.watabou.noosa.Animation;
-import com.watabou.noosa.Camera;
 import com.watabou.noosa.TextureFilm;
-import com.watabou.noosa.tweeners.Tweener;
-import com.watabou.pixeldungeon.Dungeon;
 import com.watabou.pixeldungeon.actors.hero.Hero;
 import com.watabou.pixeldungeon.actors.hero.HeroClass;
 import com.watabou.pixeldungeon.actors.hero.HeroSubClass;
 import com.watabou.pixeldungeon.items.KindOfWeapon;
 import com.watabou.pixeldungeon.items.armor.Armor;
 import com.watabou.pixeldungeon.items.weapon.Weapon;
-import com.watabou.pixeldungeon.scenes.GameScene;
 import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Callback;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,14 +23,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import androidx.annotation.NonNull;
-
 /**
  * Created by mike on 16.04.2016.
  */
 public class ModernHeroSpriteDef extends HeroSpriteDef {
 
-	private static final int RUN_FRAMERATE = 20;
 	private static final String HERO_EMPTY_PNG = "hero_modern/empty.png";
 	private static final String WEAPON_ANIM = "weapon_anim";
 
@@ -60,7 +54,6 @@ public class ModernHeroSpriteDef extends HeroSpriteDef {
 
 	private CustomClipEffect deathEffect;
 
-	private Animation fly;
 	private Map<String, Animation> weapon_anims;
 
 	private static final String[] layersOrder = {
@@ -82,8 +75,6 @@ public class ModernHeroSpriteDef extends HeroSpriteDef {
 
 	private Map<String,String> layersDesc = new HashMap<>();
 
-	private Tweener  jumpTweener;
-	private Callback jumpCallback;
 	private String deathEffectDesc;
 
 	public ModernHeroSpriteDef(String[] lookDesc, String deathEffectDesc){
@@ -126,7 +117,7 @@ public class ModernHeroSpriteDef extends HeroSpriteDef {
 		boolean drawHair = true;
 
 		String accessoryDescriptor = HERO_EMPTY_PNG;
-		String classDescriptor = hero.heroClass.toString()+"_"+hero.subClass.toString();
+		String classDescriptor = hero.getHeroClass().toString()+"_"+ hero.getSubClass().toString();
 		String deathDescriptor = classDescriptor.equals("MAGE_WARLOCK") ? "warlock" : "common";
 		String facialHairDescriptor = HERO_EMPTY_PNG;
 		String hairDescriptor = HERO_EMPTY_PNG;
@@ -314,15 +305,15 @@ public class ModernHeroSpriteDef extends HeroSpriteDef {
 			descriptor = "woman";
 		}
 
-		if(hero.subClass.equals(HeroSubClass.WARLOCK)) {
+		if(hero.getSubClass().equals(HeroSubClass.WARLOCK)) {
 			descriptor = "warlock";
 		}
 
-		if(hero.subClass.equals(HeroSubClass.LICH)) {
+		if(hero.getSubClass().equals(HeroSubClass.LICH)) {
 			descriptor = "lich";
 		}
 
-		if(hero.heroClass == HeroClass.GNOLL) {
+		if(hero.getHeroClass() == HeroClass.GNOLL) {
 			descriptor = "gnoll";
 		}
 
@@ -331,8 +322,7 @@ public class ModernHeroSpriteDef extends HeroSpriteDef {
 
 	@Override
 	protected void loadAdditionalData(JSONObject json, TextureFilm film, int kind) throws JSONException {
-		fly     = readAnimation(json, "fly", film);
-		operate = readAnimation(json, "operate", film);
+		super.loadAdditionalData(json,film,kind);
 
 		if(json.has(WEAPON_ANIM)){
 			weapon_anims = new HashMap<>();
@@ -348,68 +338,17 @@ public class ModernHeroSpriteDef extends HeroSpriteDef {
 	}
 
 	@Override
-	public void place(int p) {
-		super.place(p);
-
-		if(ch instanceof Hero) {
-			Camera.main.target = this;
-		}
-	}
-
-	@Override
-	public void move(int from, int to) {
-		super.move(from, to);
-		if (ch.isFlying()) {
-			play(fly);
-		}
-		if(ch instanceof Hero) {
-			Camera.main.target = this;
-		}
-	}
-
-	public void jump(int from, int to, Callback callback) {
-		jumpCallback = callback;
-
-		int distance = Dungeon.level.distance(from, to);
-		jumpTweener = new JumpTweener(this, worldToCamera(to), distance * 4,
-				distance * 0.1f);
-		jumpTweener.listener = this;
-		getParent().add(jumpTweener);
-
-		turnTo(from, to);
-		play(fly);
-	}
-
-	@Override
-	public void onComplete(Tweener tweener) {
-		if (tweener == jumpTweener) {
-
-			if (getVisible() && Dungeon.level.water[ch.getPos()] && !ch.isFlying()) {
-				GameScene.ripple(ch.getPos());
-			}
-			if (jumpCallback != null) {
-				jumpCallback.call();
-			}
-		} else {
-			super.onComplete(tweener);
-		}
-	}
-
-	public boolean sprint(boolean on) {
-		run.delay = on ? 0.625f / RUN_FRAMERATE : 1f / RUN_FRAMERATE;
-		return on;
-	}
-
-	@Override
 	public void die() {
 		deathEffect.place(ch.getPos());
 		getParent().add(deathEffect);
 		deathEffect.setVisible(true);
-		deathEffect.playAnim(die, () -> deathEffect.killAndErase());
+		deathEffect.playAnim(die, Util.nullCallback);
+
+		//deathEffect.playAnim(die, () -> deathEffect.killAndErase());
 		killAndErase();
 	}
 
-	@NonNull
+	@NotNull
 	public String getDeathEffect() {
 		return deathEffectDesc;
 	}

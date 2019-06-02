@@ -24,6 +24,7 @@ import com.nyrds.pixeldungeon.items.ItemOwner;
 import com.nyrds.pixeldungeon.items.common.ItemFactory;
 import com.nyrds.pixeldungeon.items.common.Library;
 import com.nyrds.pixeldungeon.levels.objects.Presser;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.EventCollector;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
@@ -52,6 +53,8 @@ import com.watabou.pixeldungeon.utils.Utils;
 import com.watabou.utils.Bundlable;
 import com.watabou.utils.Bundle;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -59,10 +62,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-public class Item implements Bundlable, Presser {
+public class Item implements Bundlable, Presser, NamedEntityKind {
 
 	private static final String TXT_TO_STRING       = "%s";
 	private static final String TXT_TO_STRING_X     = "%s x%d";
@@ -77,14 +77,14 @@ public class Item implements Bundlable, Presser {
 	private static final   String AC_DROP  = "Item_ACDrop";
 	protected static final String AC_THROW = "Item_ACThrow";
 
-	@NonNull
+	@NotNull
 	private String defaultAction = AC_THROW;
 
-	@NonNull
+	@NotNull
 	protected String name = getClassParam("Name", Game.getVar(R.string.Item_Name), false);
-	@NonNull
+	@NotNull
 	protected String info = getClassParam("Info", Game.getVar(R.string.Item_Info), false);
-	@NonNull
+	@NotNull
 	protected String info2 = getClassParam("Info2", Game.getVar(R.string.Item_Info2), false);
 
 	protected int image = 0;
@@ -95,9 +95,14 @@ public class Item implements Bundlable, Presser {
 	private int     quantity  = Scrambler.scramble(1);
 
 	private int     level      = Scrambler.scramble(0);
+
+	@Packable
 	public  boolean levelKnown = false;
 
+	@Packable
 	public boolean cursed;
+
+	@Packable
 	public boolean cursedKnown;
 
 	@Packable(defaultValue = "-1")
@@ -113,8 +118,8 @@ public class Item implements Bundlable, Presser {
 		return actions;
 	}
 
-	public boolean doPickUp(Hero hero) {
-		if (collect(hero.belongings.backpack)) {
+	public boolean doPickUp(Char hero) {
+		if (collect(hero.getBelongings().backpack)) {
 
 			GameScene.pickUp(this);
 			Sample.INSTANCE.play(Assets.SND_ITEM);
@@ -147,7 +152,7 @@ public class Item implements Bundlable, Presser {
 	}
 
 	public void execute(Hero hero) {
-		if(hero.heroClass.forbidden(getDefaultAction())){
+		if(hero.getHeroClass().forbidden(getDefaultAction())){
 			setDefaultAction(AC_THROW);
 		}
 
@@ -161,6 +166,10 @@ public class Item implements Bundlable, Presser {
 	}
 
 	public void dropTo(int cell) {
+		if(quickSlotIndex!=-1) {
+			QuickSlot.refresh();
+		}
+
 		Heap heap = Dungeon.level.drop(this, cell);
 		if (!heap.isEmpty()) {
 			heap.sprite.drop(cell);
@@ -326,11 +335,11 @@ public class Item implements Bundlable, Presser {
 		return false;
 	}
 
-	public void removeItemFrom(Hero hero) {
+	public void removeItemFrom(Char hero) {
 		onDetach();
 		cursed = false;
 		if (!(this instanceof EquipableItem) || !isEquipped(hero) || !((EquipableItem) this).doUnequip(hero, false)) {
-			hero.belongings.removeItem(this);
+			hero.getBelongings().removeItem(this);
 		}
 
 		QuickSlot.refresh();
@@ -350,7 +359,7 @@ public class Item implements Bundlable, Presser {
 		hero.getSprite().emitter().burst(Speck.factory(Speck.EVOKE), 5);
 	}
 
-	@NonNull
+	@NotNull
 	@Override
 	public String toString() {
 
@@ -411,57 +420,27 @@ public class Item implements Bundlable, Presser {
 	}
 
 	public String status() {
-		return quantity() != 1 ? Integer.toString(quantity()) : "";
+		return quantity() != 1 ? Integer.toString(quantity()) : Utils.EMPTY_STRING;
 	}
 
 	private static final String QUANTITY     = "quantity";
 	private static final String LEVEL        = "level";
-	private static final String LEVEL_KNOWN  = "levelKnown";
-	private static final String CURSED       = "cursed";
-	private static final String CURSED_KNOWN = "cursedKnown";
-
-	//TODO remove this in remix.29
-	@Deprecated
-	private static final String QUICKSLOT    = "quickslot";
-	@Deprecated
-	private static final String QUICKSLOT_2  = "quickslot_2";
-	@Deprecated
-	private static final String QUICKSLOT_3  = "quickslot_3";
 
 	@Override
 	public void storeInBundle(Bundle bundle) {
 		bundle.put(QUANTITY, quantity());
 		bundle.put(LEVEL, level());
-		bundle.put(LEVEL_KNOWN, levelKnown);
-		bundle.put(CURSED, cursed);
-		bundle.put(CURSED_KNOWN, cursedKnown);
 	}
 
 	@Override
 	public void restoreFromBundle(Bundle bundle) {
 		quantity(bundle.getInt(QUANTITY));
-		levelKnown = bundle.getBoolean(LEVEL_KNOWN);
-		cursedKnown = bundle.getBoolean(CURSED_KNOWN);
 
 		int level = bundle.getInt(LEVEL);
 		if (level > 0) {
 			upgrade(level);
 		} else if (level < 0) {
 			degrade(-level);
-		}
-
-		cursed = bundle.getBoolean(CURSED);
-
-		if (bundle.getBoolean(QUICKSLOT)) {
-			quickSlotIndex = 0;
-		}
-
-		if (bundle.getBoolean(QUICKSLOT_2)) {
-			quickSlotIndex = 1;
-		}
-
-		if (bundle.getBoolean(QUICKSLOT_3)) {
-			quickSlotIndex = 2;
 		}
 
 		if(quickSlotIndex >= 0 ) {
@@ -503,8 +482,8 @@ public class Item implements Bundlable, Presser {
 
 		((MissileSprite) user.getSprite().getParent().recycle(MissileSprite.class)).
 				reset(user.getPos(), cell, this, () -> {
-					item.onThrow(cell);
 					user.spendAndNext(finalDelay);
+					item.onThrow(cell);
 				});
 	}
 
@@ -607,7 +586,6 @@ public class Item implements Bundlable, Presser {
 
 		int level = itemDesc.optInt("level",0);
 
-
 		if(level>0) {
 			upgrade(level);
 		}
@@ -670,12 +648,12 @@ public class Item implements Bundlable, Presser {
 		return true;
 	}
 
-	@NonNull
+	@NotNull
 	public String getDefaultAction() {
 		return defaultAction;
 	}
 
-	public void setDefaultAction(@NonNull String newDefaultAction) {
+	public void setDefaultAction(@NotNull String newDefaultAction) {
 		@Nullable
 		Hero hero = getUser();
 
@@ -684,10 +662,15 @@ public class Item implements Bundlable, Presser {
 			return;
 		}
 
-		if(hero.heroClass.forbidden(newDefaultAction)) {
+		if(hero.getHeroClass().forbidden(newDefaultAction)) {
 			newDefaultAction = AC_THROW;
 		}
 
 		this.defaultAction = newDefaultAction;
+	}
+
+	@Override
+	public String getEntityKind() {
+		return getClassName();
 	}
 }

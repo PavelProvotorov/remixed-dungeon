@@ -4,8 +4,8 @@ import com.nyrds.pixeldungeon.levels.objects.LevelObject;
 import com.watabou.noosa.Animation;
 import com.watabou.noosa.MovieClip;
 import com.watabou.noosa.TextureFilm;
+import com.watabou.noosa.tweeners.FallTweener;
 import com.watabou.noosa.tweeners.PosTweener;
-import com.watabou.noosa.tweeners.ScaleTweener;
 import com.watabou.noosa.tweeners.Tweener;
 import com.watabou.pixeldungeon.Dungeon;
 import com.watabou.pixeldungeon.DungeonTilemap;
@@ -36,21 +36,10 @@ public class LevelObjectSprite extends MovieClip implements Tweener.Listener, Mo
 
 	public void fall() {
 
-		origin.set( width / 2, height - DungeonTilemap.SIZE / 2 );
+		origin.set( width / 2, height - DungeonTilemap.SIZE / 2.f );
 		angularSpeed = Random.Int( 2 ) == 0 ? -720 : 720;
 
-		getParent().add( new ScaleTweener( this, new PointF( 0, 0 ), 1f ) {
-			@Override
-			protected void onComplete() {
-				LevelObjectSprite.this.killAndErase();
-			}
-
-			@Override
-			protected void updateValues( float progress ) {
-				super.updateValues( progress );
-				am = 1 - progress;
-			}
-		} );
+		getParent().add(new FallTweener(this));
 	}
 
 	private void setLevelPos(int cell) {
@@ -68,8 +57,8 @@ public class LevelObjectSprite extends MovieClip implements Tweener.Listener, Mo
 		int ys = object.getSpriteYS();
 
 		frames = new TextureFilm(texture, xs, ys);
-		centerShift = new PointF(-(xs - DungeonTilemap.SIZE) / 2, -(ys-DungeonTilemap.SIZE) / 2);
-		origin.set(xs / 2, ys / 2);
+		centerShift = new PointF(-(xs - DungeonTilemap.SIZE) / 2.f, -(ys-DungeonTilemap.SIZE) / 2.f);
+		origin.set(xs / 2.f, ys / 2.f);
 
 		reset(object.image());
 		alpha(1f);
@@ -94,15 +83,7 @@ public class LevelObjectSprite extends MovieClip implements Tweener.Listener, Mo
 
 	}
 
-	public void playAnim(Animation.AnimationSeq animationSeq, Callback animComplete) {
-		Animation anim = new Animation(animationSeq.fps, animationSeq.looped);
-		anim.frames(frames, animationSeq.frames);
-		onAnimComplete = animComplete;
-		listener = this;
-		play(anim);
-	}
-
-	private void playAnim(Animation anim, Callback animComplete) {
+	public void playAnim(Animation anim, Callback animComplete) {
 		onAnimComplete = animComplete;
 		listener = this;
 		play(anim);

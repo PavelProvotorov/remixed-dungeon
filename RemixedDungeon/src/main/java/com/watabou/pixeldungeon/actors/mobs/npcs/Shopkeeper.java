@@ -19,13 +19,14 @@ package com.watabou.pixeldungeon.actors.mobs.npcs;
 
 import com.nyrds.pixeldungeon.levels.PredesignedLevel;
 import com.nyrds.pixeldungeon.levels.TownShopLevel;
+import com.nyrds.pixeldungeon.mechanics.NamedEntityKind;
 import com.nyrds.pixeldungeon.ml.R;
 import com.watabou.noosa.Game;
 import com.watabou.pixeldungeon.Dungeon;
+import com.watabou.pixeldungeon.actors.Char;
 import com.watabou.pixeldungeon.actors.buffs.Buff;
 import com.watabou.pixeldungeon.actors.buffs.Regeneration;
 import com.watabou.pixeldungeon.actors.hero.Belongings;
-import com.watabou.pixeldungeon.actors.hero.Hero;
 import com.watabou.pixeldungeon.effects.CellEmitter;
 import com.watabou.pixeldungeon.effects.particles.ElmoParticle;
 import com.watabou.pixeldungeon.items.Generator;
@@ -42,6 +43,8 @@ import com.watabou.pixeldungeon.windows.WndOptions;
 import com.watabou.pixeldungeon.windows.WndTradeItem;
 import com.watabou.utils.Bundle;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collections;
 
 public class Shopkeeper extends NPC {
@@ -50,6 +53,7 @@ public class Shopkeeper extends NPC {
 		spriteClass = ShopkeeperSprite.class;
 		movable = false;
 		belongings = new Belongings(this);
+		addImmunity(Regeneration.class);
 	}
 
 	private Belongings belongings;
@@ -65,16 +69,12 @@ public class Shopkeeper extends NPC {
 	}
 	
 	@Override
-	public void damage( int dmg, Object src ) {
+	public void damage(int dmg, @NotNull NamedEntityKind src ) {
 		flee();
 	}
 	
 	@Override
 	public void add( Buff buff ) {
-		if(buff instanceof Regeneration) {
-			super.add(buff);
-			return;
-		}
 		flee();
 	}
 	
@@ -129,7 +129,7 @@ public class Shopkeeper extends NPC {
 	};
 
 	@Override
-	public boolean interact(final Hero hero) {
+	public boolean interact(final Char hero) {
 
 
 
@@ -149,7 +149,7 @@ public class Shopkeeper extends NPC {
 
 				switch (index) {
 					case 0:
-						wndBag = new WndBag(hero.belongings,hero.belongings.backpack,sellItemSelector,WndBag.Mode.FOR_SALE, Game.getVar(R.string.Shopkeeper_Sell));
+						wndBag = new WndBag(hero.getBelongings(),hero.getBelongings().backpack,sellItemSelector,WndBag.Mode.FOR_SALE, Game.getVar(R.string.Shopkeeper_Sell));
 						break;
 					case 1:
 						wndBag = new WndBag(belongings,belongings.backpack,buyItemSelector,WndBag.Mode.FOR_BUY, Game.getVar(R.string.Shopkeeper_Buy));

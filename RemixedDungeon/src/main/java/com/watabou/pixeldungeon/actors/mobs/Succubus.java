@@ -35,7 +35,7 @@ import com.watabou.pixeldungeon.mechanics.Ballistica;
 import com.watabou.pixeldungeon.sprites.SuccubusSprite;
 import com.watabou.utils.Random;
 
-import androidx.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 public class Succubus extends Mob {
 
@@ -55,8 +55,8 @@ public class Succubus extends Mob {
 		loot = new ScrollOfLullaby();
 		lootChance = 0.05f;
 
-		RESISTANCES.add(Leech.class);
-		IMMUNITIES.add(Sleep.class);
+		addResistance(Leech.class);
+		addImmunity(Sleep.class);
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class Succubus extends Mob {
 	}
 
 	@Override
-	public int attackProc(@NonNull Char enemy, int damage) {
+	public int attackProc(@NotNull Char enemy, int damage) {
 
 		if (Random.Int(3) == 0) {
 			Char target = enemy;
