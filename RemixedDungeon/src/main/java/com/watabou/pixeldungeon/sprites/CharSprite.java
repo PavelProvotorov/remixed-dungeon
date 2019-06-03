@@ -19,6 +19,7 @@ package com.watabou.pixeldungeon.sprites;
 
 import com.nyrds.android.util.ModdingMode;
 import com.nyrds.pixeldungeon.ml.EventCollector;
+import com.watabou.gltextures.TextureCache;
 import com.watabou.noosa.Animation;
 import com.watabou.noosa.CompositeMovieClip;
 import com.watabou.noosa.CompositeTextureImage;
@@ -49,6 +50,8 @@ import com.watabou.utils.PointF;
 import com.watabou.utils.Random;
 
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Locale;
 
@@ -520,5 +523,26 @@ public class CharSprite extends CompositeMovieClip implements Tweener.Listener, 
 
     public void reset() {
         curAnim = null;
+    }
+
+    public JSONObject toJson() throws JSONException {
+        JSONObject ret = new JSONObject();
+
+        ret.put("texture", TextureCache.source(texture));
+        ret.put("width", width);
+        ret.put("height",height);
+
+        ret.put("idle",idle.toJson());
+        ret.put("run",run.toJson());
+        ret.put("idle",idle.toJson());
+        if(attack!=null) {
+            ret.put("attack", attack.toJson());
+        }
+        if(zap!=null && zap != attack) {
+            ret.put("zap", zap.toJson());
+        }
+        ret.put("die",die.toJson());
+        ret.put("bloodColor",String.format("0x%x",blood()));
+        return ret;
     }
 }
